@@ -48,7 +48,15 @@ StreamIQ supports **dual NLP engines**:
   export NLP_ENGINE=spark
   python src/app.py
 
+Demo Mode (Hugging Face)  
+Lightweight mode for demos and local testing.
 
+Bash
+
+export NLP_ENGINE=hf
+python src/app.py
+
+📂 Project Structure
 StreamIQ/
 │── README.md
 │── requirements.txt
@@ -60,65 +68,97 @@ StreamIQ/
 │
 ├── src/
 │   ├── __init__.py
-│   ├── app.py
+│   ├── app.py             # Flask entry point
 │   │
 │   ├── api/
 │   │   ├── __init__.py
-│   │   └── routes.py        # Flask API endpoints
+│   │   └── routes.py      # API endpoints
 │   │
 │   ├── db/
 │   │   ├── __init__.py
-│   │   ├── models.py        # SQLAlchemy ORM models
-│   │   └── connection.py    # MySQL connection setup
+│   │   ├── models.py      # SQLAlchemy ORM models
+│   │   └── connection.py  # Database connection setup
 │   │
 │   ├── speech_to_text/
 │   │   ├── __init__.py
-│   │   └── transcriber.py
+│   │   └── transcriber.py # Speech-to-text engine
 │   │
 │   ├── nlp/
 │   │   ├── __init__.py
-│   │   ├── sentiment.py
-│   │   └── intent.py
+│   │   ├── sentiment.py   # Sentiment analysis
+│   │   └── intent.py      # Intent classification
 │   │
 │   ├── satisfaction/
 │   │   ├── __init__.py
-│   │   └── predictor.py
+│   │   └── predictor.py   # Satisfaction scoring
 │   │
 │   ├── utils/
 │   │   ├── __init__.py
-│   │   └── logger.py
+│   │   ├── helpers.py     # Text cleaning, timestamp formatting
+│   │   ├── logger.py      # Centralized logging
+│   │   └── validators.py  # Payload validation
 │   │
-│   └── tests/               # ✅ New test suite
+│   └── tests/
 │       ├── __init__.py
-│       ├── test_transcriber.py
-│       ├── test_sentiment.py
-│       ├── test_predictor.py
-│       └── test_api.py
+│       ├── test_api.py        # Tests for API routes
+│       ├── test_predictor.py  # Tests for satisfaction predictor
+│       ├── test_sentiment.py  # Tests for sentiment analysis
+│       └── test_transcriber.py# Tests for speech-to-text
 │
 ├── dashboards/
 │   ├── __init__.py
-│   └── streamlit_app.py     # ✅ Polished dashboard
+│   └── streamlit_app.py   # Streamlit dashboard
 │
 ├── ci_cd/
-│   └── github_actions.yml
+│   └── github_actions.yml # CI/CD pipeline config
 │
 ├── ecs/
-│   └── task_definition.json
+│   └── task_definition.json # AWS ECS task definition
 │
 ├── mlflow/
-│   ├── experiments/
+│   ├── experiments/       # Experiment tracking
 │   └── config.yml
 │
 ├── dvc/
 │   ├── data/
-│   │   ├── raw/             # ✅ Sample dataset
-│   │   └── processed/
-│   ├── models/
-│   └── dvc.yaml
+│   │   ├── raw/           # Raw datasets
+│   │   └── processed/     # Processed datasets
+│   ├── models/            # Versioned models
+│   └── dvc.yaml           # DVC pipeline config
 │
-└── demo/                    # ✅ Recruiter demo scripts
-    ├── demo_predict.py
-    └── demo_transcribe.py
+└── demo/
+    ├── demo_predict.py    # Demo satisfaction prediction
+    └── demo_transcribe.py # Demo speech-to-text
+│
+└── LICENSE                # MIT License © 2026 Percy Thabo Mathebula
 
-📜 License
-MIT License © 2026 Percy Thabo Mathebula
+▶️ Launch the Dashboard
+Powershell
+streamlit run dashboards/streamlit_app.py
+
+The app will open at http://localhost:8501.
+
+🛠️ Troubleshooting
+
+ModuleNotFoundError: No module named 'src'
+Ensure you’re running from the project root (C:\StreamIQ App).
+
+Verify __init__.py exists in src/ and its subfolders.
+
+Add PYTHONPATH to your venv activation script:
+
+$env:PYTHONPATH="C:\StreamIQ App"
+
+Streamlit not opening in browser
+Check if the app is running at http://localhost:8501.
+
+If blocked, open manually in your browser
+
+📈 Visibility
+Enterprise‑ready modular structure with dual NLP engines.
+
+Dashboard polish: history tracker, trend charts, CSV export.
+
+Repo hygiene: badges, screenshots, CI/CD pipeline, Docker deployment.
+
+

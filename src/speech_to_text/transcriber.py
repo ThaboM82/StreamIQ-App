@@ -1,38 +1,36 @@
 """
-Speech-to-Text Transcriber
-==========================
+Speech-to-Text Transcriber Module
+=================================
 
-Provides a simple interface for converting audio files
-into text for downstream NLP analysis in StreamIQ.
+Provides a simple wrapper for speech-to-text transcription.
 """
 
 import speech_recognition as sr
 
-def transcribe_audio(file_path: str) -> str:
-    """
-    Transcribe an audio file into text.
+class Transcriber:
+    def __init__(self):
+        self.recognizer = sr.Recognizer()
 
-    Parameters
-    ----------
-    file_path : str
-        Path to the audio file (e.g., .wav, .mp3).
+    def transcribe(self, audio_bytes: bytes) -> str:
+        """
+        Transcribe audio from raw bytes.
 
-    Returns
-    -------
-    str
-        Transcribed text from the audio.
-    """
-    recognizer = sr.Recognizer()
+        Parameters
+        ----------
+        audio_bytes : bytes
+            Audio file content (wav/mp3).
 
-    try:
-        with sr.AudioFile(file_path) as source:
-            audio_data = recognizer.record(source)
-            # Using Google's free API for demo purposes
-            text = recognizer.recognize_google(audio_data)
-            return text
-    except sr.UnknownValueError:
-        return "[Unintelligible audio]"
-    except sr.RequestError as e:
-        return f"[API error: {e}]"
-    except Exception as e:
-        return f"[Transcription failed: {e}]"
+        Returns
+        -------
+        str
+            Transcribed text.
+        """
+        try:
+            # Convert bytes to AudioData
+            import io
+            audio_file = sr.AudioFile(io.BytesIO(audio_bytes))
+            with audio_file as source:
+                audio = self.recognizer.record(source)
+            return self.recognizer.recognize_google(audio)
+        except Exception as e:
+            return f"Transcription failed: {e}"

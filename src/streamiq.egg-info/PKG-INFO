@@ -1,0 +1,155 @@
+Metadata-Version: 2.4
+Name: streamiq
+Version: 0.1.0
+Summary: StreamIQ – Real-Time Customer Intelligence with modular NLP pipeline
+Author: Percy Mathabela
+Author-email: Percy Mathabela <peccymath@gmail.com>
+License: MIT
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: Flask==3.0.2
+Requires-Dist: streamlit==1.32.0
+Requires-Dist: pyspark==3.5.1
+Requires-Dist: spark-nlp==5.3.0
+Requires-Dist: transformers==4.39.3
+Requires-Dist: torch==2.2.2
+Requires-Dist: SQLAlchemy==2.0.29
+Requires-Dist: mysqlclient==2.2.4
+Requires-Dist: alembic==1.13.1
+Requires-Dist: mlflow==2.11.3
+Requires-Dist: dvc==3.50.0
+Requires-Dist: pandas==2.2.1
+Requires-Dist: numpy==1.26.4
+Requires-Dist: scikit-learn==1.4.1
+Requires-Dist: loguru==0.7.2
+Requires-Dist: pytest==8.1.1
+Requires-Dist: pytest-cov==5.0.0
+Requires-Dist: docker==7.0.0
+Requires-Dist: boto3==1.34.79
+Dynamic: author
+Dynamic: requires-python
+
+# StreamIQ – Real-Time Customer Intelligence 🚀
+
+[![CI/CD Pipeline](https://github.com/ThaboM82/streamiq/actions/workflows/github_actions.yml/badge.svg)]()
+[![Coverage Status](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)]()
+[![Docker Build](https://img.shields.io/badge/docker-ready-green.svg)]()
+[![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)]()
+[![AWS ECS](https://img.shields.io/badge/deploy-ecs-orange.svg)]()
+
+---
+
+## 📖 Overview
+**StreamIQ** is a modular, scalable NLP pipeline for **real-time customer intelligence** in banks, insurers, and call centers.  
+
+It integrates:
+- 🎙️ Speech-to-Text transcription  
+- 🧠 NLP (sentiment + intent classification)  
+- 📊 Satisfaction prediction  
+- 🗄️ MySQL persistence with Alembic migrations  
+- 📈 Recruiter-facing Streamlit dashboard  
+- 🔄 Full MLOps discipline with **MLflow** + **DVC**  
+- 🐳 Docker + ECS deployment with CI/CD automation  
+- ⚡ Dual NLP engines: **Spark NLP (big data)** + **Hugging Face (demo mode)**  
+
+---
+
+## 🛠️ Tech Stack
+- **Python 3.11**
+- **Flask** – REST API endpoints
+- **Streamlit** – dashboards
+- **PySpark + Spark NLP** – scalable big data NLP
+- **Hugging Face Transformers** – lightweight demo NLP
+- **MySQL + SQLAlchemy + Alembic** – persistence + migrations
+- **Docker + ECS** – deployment
+- **GitHub Actions** – CI/CD automation
+- **MLflow** – experiment tracking
+- **DVC** – dataset + model versioning
+- **Pytest** – unit + integration tests
+
+---
+
+## ⚡ Big Data Mode vs Demo Mode
+
+StreamIQ supports **dual NLP engines**:
+
+- **Big Data Mode (Spark NLP)**  
+  Run distributed pipelines with PySpark + Spark NLP.  
+  ```bash
+  export NLP_ENGINE=spark
+  python src/app.py
+
+
+StreamIQ/
+│── README.md
+│── requirements.txt
+│── Dockerfile
+│── docker-compose.yml
+│── pyproject.toml
+│── setup.cfg
+│── setup.py
+│
+├── src/
+│   ├── __init__.py
+│   ├── app.py
+│   │
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── routes.py        # Flask API endpoints
+│   │
+│   ├── db/
+│   │   ├── __init__.py
+│   │   ├── models.py        # SQLAlchemy ORM models
+│   │   └── connection.py    # MySQL connection setup
+│   │
+│   ├── speech_to_text/
+│   │   ├── __init__.py
+│   │   └── transcriber.py
+│   │
+│   ├── nlp/
+│   │   ├── __init__.py
+│   │   ├── sentiment.py
+│   │   └── intent.py
+│   │
+│   ├── satisfaction/
+│   │   ├── __init__.py
+│   │   └── predictor.py
+│   │
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   └── logger.py
+│   │
+│   └── tests/               # ✅ New test suite
+│       ├── __init__.py
+│       ├── test_transcriber.py
+│       ├── test_sentiment.py
+│       ├── test_predictor.py
+│       └── test_api.py
+│
+├── dashboards/
+│   ├── __init__.py
+│   └── streamlit_app.py     # ✅ Polished dashboard
+│
+├── ci_cd/
+│   └── github_actions.yml
+│
+├── ecs/
+│   └── task_definition.json
+│
+├── mlflow/
+│   ├── experiments/
+│   └── config.yml
+│
+├── dvc/
+│   ├── data/
+│   │   ├── raw/             # ✅ Sample dataset
+│   │   └── processed/
+│   ├── models/
+│   └── dvc.yaml
+│
+└── demo/                    # ✅ Recruiter demo scripts
+    ├── demo_predict.py
+    └── demo_transcribe.py
+
+📜 License
+MIT License © 2026 Percy Thabo Mathebula

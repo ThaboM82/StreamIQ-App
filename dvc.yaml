@@ -1,14 +1,9 @@
 stages:
   train:
-    cmd: '& " C:/Users/THABO MATHEBULA/AppData/Local/Programs/Python/Python311/python.exe\
-      scripts/train.py'
+    cmd: python scripts/train.py
     deps:
-    - data/call_center.csv
-    - data/claims.csv
+    - data/call_center_prepared.csv
+    - data/claims_prepared.csv
     - scripts/train.py
     outs:
-    - model.pkl
-    - results.csv
-    metrics:
-    - metrics.json:
-        cache: false
+    - models/sentiment_model.pkl

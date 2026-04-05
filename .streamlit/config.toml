@@ -1,0 +1,9 @@
+[theme]
+# 🎨 Color Palette
+primaryColor = "#1E88E5"        # Brand Blue
+backgroundColor = "#FFFFFF"     # Main content background
+secondaryBackgroundColor = "#F5F5F5"  # Sidebar / panels
+textColor = "#212121"           # Dark Charcoal for readability
+
+# 🔤 Font Style
+font = "Roboto"

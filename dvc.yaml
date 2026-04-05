@@ -1,0 +1,13 @@
+stages:
+  train:
+    cmd: python scripts/train.py
+    deps:
+    - data/call_center.csv
+    - data/claims.csv
+    - scripts/train.py
+    outs:
+    - model.pkl
+    - results.csv
+    metrics:
+    - metrics.json:
+        cache: false

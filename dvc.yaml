@@ -1,6 +1,7 @@
 stages:
   train:
-    cmd: python scripts/train.py
+    cmd: '& " C:/Users/THABO MATHEBULA/AppData/Local/Programs/Python/Python311/python.exe\
+      scripts/train.py'
     deps:
     - data/call_center.csv
     - data/claims.csv

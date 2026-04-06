@@ -154,11 +154,25 @@ Check if the app is running at http://localhost:8501.
 
 If blocked, open manually in your browser
 
-📈 Visibility
-Enterprise‑ready modular structure with dual NLP engines.
 
-Dashboard polish: history tracker, trend charts, CSV export.
+## 🚀 Deployment
 
-Repo hygiene: badges, screenshots, CI/CD pipeline, Docker deployment.
+StreamIQ is designed with an **enterprise‑grade CI/CD pipeline** that ensures every commit is tested, containerized, and ready for production deployment.
+
+### 🔹 CI/CD Workflow
+- **GitHub Actions** (`ci_cd/github_actions.yml`) runs automatically on every push and pull request.
+- Pipeline stages:
+  1. **Linting** → `flake8` enforces code quality.
+  2. **Testing** → `pytest` validates functionality.
+  3. **Docker Build** → container image built locally and in CI.
+  4. **Artifact Upload** → coverage reports and logs stored for review.
+  5. **Deployment (future)** → automatic push to AWS ECS once credentials and cluster are configured.
+
+### 🔹 Deployment Targets
+- **Local Development**  
+  Run StreamIQ in Docker:
+  ```bash
+  docker build -t streamiq-app .
+  docker run -p 8501:8501 streamiq-app
 
 

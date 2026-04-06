@@ -1,9 +1,34 @@
 stages:
+  prepare_call_center:
+    cmd: python scripts/prepare.py data/call_center.csv
+    deps:
+      - scripts/prepare.py
+      - data/call_center.csv
+    outs:
+      - data/call_center_prepared.csv
+
+  prepare_claims:
+    cmd: python scripts/prepare.py data/claims.csv
+    deps:
+      - scripts/prepare.py
+      - data/claims.csv
+    outs:
+      - data/claims_prepared.csv
+
   train:
     cmd: python scripts/train.py
     deps:
-    - data/call_center_prepared.csv
-    - data/claims_prepared.csv
-    - scripts/train.py
+      - scripts/train.py
+      - data/call_center_prepared.csv
+      - data/claims_prepared.csv
     outs:
-    - models/sentiment_model.pkl
+      - models/sentiment_model.pkl
+
+  evaluate:
+    cmd: python scripts/evaluate.py models/sentiment_model.pkl data/test.csv
+    deps:
+      - scripts/evaluate.py
+      - models/sentiment_model.pkl
+      - data/test.csv
+    outs:
+      - data/metrics.txt

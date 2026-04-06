@@ -1,0 +1,9 @@
+transcript,label
+"Customer is unhappy with service",negative
+"Agent resolved the issue quickly",positive
+"Client asked about billing",neutral
+"Complaint about product quality",negative
+"Car accident claim filed",auto
+"Medical reimbursement request",health
+"House fire insurance claim",property
+"Travel cancellation claim",travel

@@ -1,0 +1,8 @@
+[core]
+    remote = localstore
+['remote "storage"']
+    url = ../dvc_storage
+['remote "origin_remote"']
+    url = https://github.com/ThaboM82/StreamIQ-App.git
+['remote "localstore"']
+    url = ../dvc_storage

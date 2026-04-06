@@ -1,0 +1,54 @@
+# CI/CD pipeline config
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Python
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Lint with flake8
+      - name: Lint code
+        run: |
+          pip install flake8
+          flake8 src dashboards
+
+      # Run tests
+      - name: Run tests with pytest
+        run: |
+          pip install pytest
+          pytest --maxfail=1 --disable-warnings -q
+
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t streamiq-app .
+
+      # Upload coverage report (optional)
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: ./.coverage

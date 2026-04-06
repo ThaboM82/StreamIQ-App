@@ -1,0 +1,10 @@
+experiment:
+  name: StreamIQ-NLP
+  description: >
+    MLflow experiment tracking for StreamIQ NLP pipelines
+    (sentiment analysis, topic modeling, claims classification).
+  artifact_location: ./mlruns/artifacts
+  tags:
+    project: StreamIQ
+    owner: Percy Thabo Mathebula
+    domain: Banking-Insurance-CallCenter

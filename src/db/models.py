@@ -1,12 +1,21 @@
-from sqlalchemy import Column, Integer, String, DateTime
+# src/db/models.py
+from sqlalchemy import Column, Integer, String, Text, DateTime
 from .connection import Base
 
-class AuditLog(Base):
-    __tablename__ = "audit_logs"
+class CallCenterRecord(Base):
+    __tablename__ = "call_center_records"
 
     id = Column(Integer, primary_key=True, index=True)
-    action = Column(String(255), nullable=False)
-    timestamp = Column(DateTime, nullable=False)
+    customer_id = Column(String(50), index=True)
+    transcript = Column(Text)
+    sentiment = Column(String(20))
+    created_at = Column(DateTime)
 
-    def __repr__(self):
-        return f"<AuditLog(id={self.id}, action='{self.action}', timestamp={self.timestamp})>"
+class InsuranceClaim(Base):
+    __tablename__ = "insurance_claims"
+
+    id = Column(Integer, primary_key=True, index=True)
+    claim_id = Column(String(50), unique=True, index=True)
+    description = Column(Text)
+    intent = Column(String(50))
+    created_at = Column(DateTime)

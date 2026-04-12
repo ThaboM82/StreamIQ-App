@@ -1,34 +1,56 @@
-# Core
-python-dotenv==1.0.0
-Flask==3.0.2
-streamlit==1.32.0
+# Core web framework
+flask>=3.0.0
 
-# NLP Engines
-pyspark==3.5.1
-spark-nlp==5.3.0
-transformers==4.39.3
-torch==2.2.2
+# Dashboard framework
+streamlit>=1.32.0
 
-# Database + ORM
-SQLAlchemy==2.0.29
-mysqlclient==2.2.4
+# Data science stack
+numpy>=1.26.0
+pandas>=2.2.0
+scikit-learn==1.4.1.post1   # aligned with pyproject.toml
+
+# Database layer (SQLite built-in, just need SQLAlchemy + Alembic)
+sqlalchemy>=2.0.0
 alembic==1.13.1
 
-# MLOps
-mlflow==2.11.3
-dvc==3.50.0
+# HTTP requests
+requests>=2.31.0
 
-# Utilities
-pandas==2.2.1
-numpy==1.26.4
-scikit-learn==1.4.1.post1
-loguru==0.7.2
+# Config management
+python-decouple==3.8
+python-dotenv>=1.0.0
 
+# Validation
+pydantic>=2.6.0
 
-# Testing
+# NLP modules
+nltk>=3.8.1
+transformers>=4.39.0
+spacy>=3.7.0
+spark-nlp==5.3.0
+
+# Speech-to-text
+speechrecognition>=3.10.0
+openai-whisper>=20231117
+
+# Workflow & MLOps
+mlflow>=2.11.0,<3.0
+dvc>=3.49.0,<4.0
+docker==7.0.0
+
+# Visualization
+plotly==5.19.0
+matplotlib==3.8.3
+seaborn==0.13.2
+
+# Testing & CI/CD
 pytest==8.1.1
 pytest-cov==5.0.0
+coverage==7.4.4
 
-# Deployment
-docker==7.0.0
-boto3==1.34.79   # AWS SDK for ECS integration
+# Big data / ML
+pyspark==3.5.1
+torch==2.2.2
+
+# Editable install of your own package
+-e .

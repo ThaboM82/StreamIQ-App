@@ -1,17 +1,13 @@
-def validate_payload(data: dict, required_keys: list) -> bool:
-    """
-    Validate that required keys exist in a payload.
+def validate_language(lang: str) -> bool:
+    """Validate that the selected language is supported."""
+    supported = ["English", "isiZulu", "Sepedi", "Xitsonga"]
+    return lang in supported
 
-    Parameters
-    ----------
-    data : dict
-        Input JSON payload
-    required_keys : list
-        Keys that must be present
+def validate_non_empty(text: str) -> bool:
+    """Ensure text input is not empty or just whitespace."""
+    return bool(text and text.strip())
 
-    Returns
-    -------
-    bool
-        True if valid, False otherwise
-    """
-    return all(key in data for key in required_keys)
+def validate_domain(domain: str) -> bool:
+    """Validate that the selected domain is supported."""
+    supported = ["Banking", "Insurance", "CallCenter"]
+    return domain in supported

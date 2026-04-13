@@ -1,7 +1,0 @@
-api
-db
-nlp
-satisfaction
-speech_to_text
-tests
-utils

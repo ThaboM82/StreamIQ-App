@@ -1,54 +1,49 @@
-# CI/CD pipeline config
-
-name: CI/CD Pipeline
+name: CI/CD Deploy to ECS
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repo
+      # 1. Checkout repo
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Python
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      # 2. Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          python-version: '3.11'
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1   # change to your region
 
-      # Install dependencies
-      - name: Install dependencies
+      # 3. Login to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 4. Build & push backend image
+      - name: Build and push backend
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/streamiq-backend:latest -f Dockerfile .
+          docker push ${{ steps.login-ecr.outputs.registry }}/streamiq-backend:latest
 
-      # Lint with flake8
-      - name: Lint code
+      # 5. Build & push dashboard image
+      - name: Build and push dashboard
         run: |
-          pip install flake8
-          flake8 src dashboards
+          docker build -t ${{ steps.login-ecr.outputs.registry }}/streamiq-dashboard:latest -f Dockerfile .
+          docker push ${{ steps.login-ecr.outputs.registry }}/streamiq-dashboard:latest
 
-      # Run tests
-      - name: Run tests with pytest
-        run: |
-          pip install pytest
-          pytest --maxfail=1 --disable-warnings -q
-
-      # Build Docker image
-      - name: Build Docker image
-        run: |
-          docker build -t streamiq-app .
-
-      # Upload coverage report (optional)
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+      # 6. Deploy to ECS
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          name: coverage-report
-          path: ./.coverage
+          task-definition: ecs/task_definition.json
+          service: streamiq-service
+          cluster: streamiq-cluster
+          wait-for-service-stability: true

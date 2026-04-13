@@ -1,28 +1,40 @@
 version: "3.9"
 
 services:
-  streamiq:
+  backend:
     build: .
-    container_name: streamiq_app
-    restart: always
+    container_name: streamiq-backend
+    command: uvicorn src.backend.main:app --host 0.0.0.0 --port 8000
     ports:
-      - "5000:5000"   # Flask API
-      - "8501:8501"   # Streamlit dashboard
-    environment:
-      - NLP_ENGINE=huggingface   # switch to 'spark' for big data mode
-      - DATABASE_URL=mysql://user:password@db/streamiq
+      - "8000:8000"
     depends_on:
       - db
+    environment:
+      - NLP_ENGINE=hf   # or spark, configurable
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=streamiq
+
+  dashboard:
+    build: .
+    container_name: streamiq-dashboard
+    command: streamlit run dashboards/app.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    environment:
+      - BACKEND_URL=http://backend:8000
 
   db:
     image: mysql:8.0
-    container_name: streamiq_db
+    container_name: streamiq-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: streamiq
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
     ports:
       - "3306:3306"
     volumes:
@@ -30,3 +42,5 @@ services:
 
 volumes:
   db_data:
+
+    

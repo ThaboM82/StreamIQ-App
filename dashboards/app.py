@@ -1,28 +1,34 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import requests
+from src.utils.helpers import log_history, show_history
+from src.utils.session_state_initializer import init_session_state
+from src.utils.validators import validate_language, validate_non_empty, validate_domain
+from src.utils.logger import init_db
 
 # -------------------------------
-# StreamIQ Unified Dashboard
+# Initialization
 # -------------------------------
+init_session_state()
+init_db()
 
-st.set_page_config(
-    page_title="StreamIQ Enterprise Demo",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Backend URL (Flask)
+BACKEND_URL = "http://127.0.0.1:8000"
 
-# Sidebar navigation
-st.sidebar.header("Navigation")
+# -------------------------------
+# Sidebar Navigation
+# -------------------------------
+st.sidebar.title("StreamIQ Dashboard")
 page = st.sidebar.radio(
-    "Go to:",
+    "Navigate",
     [
         "Home",
         "Pipeline",
         "Call Center Results",
         "Insurance Claims Results",
         "Multilingual Processor",
+        "Mock Data Demo",
+        "NLP Demo",
         "Logs",
         "History",
         "Settings",
@@ -30,220 +36,158 @@ page = st.sidebar.radio(
     ]
 )
 
-# Backend URL
-BACKEND_URL = "http://localhost:8000"
-
-# Language mapping
-LANG_MAP = {
-    "English": "en",
-    "Afrikaans": "af",
-    "Zulu": "zu",
-    "Sepedi": "nso",
-    "Xitsonga": "ts"
-}
-
-# Initialize history tracker
-if "history" not in st.session_state:
-    st.session_state["history"] = []
-
 # -------------------------------
-# Page: Home
+# Pages
 # -------------------------------
+
 if page == "Home":
-    st.title("🌍 StreamIQ Enterprise NLP Demo")
-    st.markdown("""
-    Welcome to **StreamIQ** — your enterprise‑ready NLP demo platform.
-    
-    **Features:**
-    - Multilingual text processing (English, Afrikaans, Zulu, Sepedi, Xitsonga)  
-    - Pipeline status monitoring  
-    - Call center and insurance claims analytics  
-    - Logs and audit trail for demo resilience  
-    - Sidebar navigation for modular pages  
-    """)
+    st.header("🏠 Welcome to StreamIQ")
+    query = st.text_input("Enter a query:")
+    if st.button("Submit"):
+        if validate_non_empty(query):
+            log_history(f"User query: {query}")
+            st.success("Query logged successfully.")
+        else:
+            st.error("Please enter a valid query.")
 
-# -------------------------------
-# Page: Pipeline
-# -------------------------------
 elif page == "Pipeline":
-    st.header("Pipeline Status")
-    st.write("✔️ NLP Engine initialized")
-    st.write("⚠️ Topic Modeling pending")
-    st.write("❌ Entity Extraction failed")
+    st.header("⚙️ Pipeline Status")
+    st.info("Pipeline running smoothly (demo placeholder).")
 
-# -------------------------------
-# Page: Call Center Results
-# -------------------------------
 elif page == "Call Center Results":
-    st.header("📂 Call Center Analysis")
-    call_data = {
-        "Call_ID": [1001, 1002, 1003, 1004, 1005],
-        "Customer_Segment": ["Retail Banking", "Insurance Claims", "Corporate Client", "Retail Banking", "Insurance Claims"],
-        "Transcript_Snippet": [
-            "I can’t access my online account today.",
-            "The agent helped me file quickly.",
-            "Fees are higher than expected.",
-            "Great service, very polite staff.",
-            "Still waiting for my reimbursement."
-        ],
-        "Sentiment": ["Negative", "Positive", "Negative", "Positive", "Neutral"],
-        "Topic": ["Account Access", "Claims Processing", "Pricing", "Customer Service", "Claims Delay"]
-    }
-    call_df = pd.DataFrame(call_data)
+    st.header("📞 Call Center Analytics")
+    df = pd.DataFrame({
+        "Agent": ["Alice", "Bob", "Charlie"],
+        "Calls": [120, 95, 110],
+        "Satisfaction": [0.92, 0.85, 0.88]
+    })
+    st.dataframe(df)
+    log_history("Viewed Call Center Results")
 
-    sentiment_filter = st.selectbox("Filter by Sentiment", ["All"] + call_df["Sentiment"].unique().tolist())
-    segment_filter = st.selectbox("Filter by Customer Segment", ["All"] + call_df["Customer_Segment"].unique().tolist())
-
-    filtered_call_df = call_df.copy()
-    if sentiment_filter != "All":
-        filtered_call_df = filtered_call_df[filtered_call_df["Sentiment"] == sentiment_filter]
-    if segment_filter != "All":
-        filtered_call_df = filtered_call_df[filtered_call_df["Customer_Segment"] == segment_filter]
-
-    if sentiment_filter != "All" or segment_filter != "All":
-        st.session_state["history"].append(
-            f"Call Center filter applied → Sentiment: {sentiment_filter}, Segment: {segment_filter}"
-        )
-
-    st.dataframe(filtered_call_df)
-
-    st.download_button(
-        label="⬇️ Download Call Center Data (CSV)",
-        data=filtered_call_df.to_csv(index=False).encode("utf-8"),
-        file_name="call_center_results.csv",
-        mime="text/csv"
-    )
-
-    fig = px.histogram(filtered_call_df, x="Sentiment", color="Sentiment", title="Sentiment Distribution")
-    st.plotly_chart(fig, use_container_width=True)
-
-    topic_counts = filtered_call_df["Topic"].value_counts().reset_index()
-    topic_counts.columns = ["Topic", "Count"]
-    fig2 = px.bar(topic_counts, x="Topic", y="Count", title="Topic Frequency")
-    st.plotly_chart(fig2, use_container_width=True)
-
-# -------------------------------
-# Page: Insurance Claims Results
-# -------------------------------
 elif page == "Insurance Claims Results":
-    st.header("📂 Insurance Claims Workflow")
-    claims_data = {
-        "Claim_ID": [2001, 2002, 2003, 2004, 2005],
-        "Customer_Segment": ["Retail Customer", "Corporate Client", "Retail Customer", "Retail Customer", "Corporate Client"],
-        "Claim_Type": ["Auto Accident", "Property Damage", "Health Insurance", "Auto Accident", "Liability Claim"],
-        "Status": ["Approved", "Pending", "Rejected", "Approved", "Escalated"],
-        "Sentiment": ["Positive", "Neutral", "Negative", "Positive", "Negative"],
-        "Notes": [
-            "Claim processed quickly, thank you.",
-            "Still waiting for assessment report.",
-            "Unfair denial, need explanation.",
-            "Funds reimbursed within 3 days.",
-            "Case dragged on too long."
-        ]
-    }
-    claims_df = pd.DataFrame(claims_data)
+    st.header("📑 Insurance Claims Analytics")
+    df = pd.DataFrame({
+        "ClaimID": [101, 102, 103],
+        "Amount": [5000, 12000, 7500],
+        "Status": ["Approved", "Pending", "Rejected"]
+    })
+    st.dataframe(df)
+    log_history("Viewed Insurance Claims Results")
 
-    status_filter = st.selectbox("Filter by Claim Status", ["All"] + claims_df["Status"].unique().tolist())
-    segment_filter_claims = st.selectbox("Filter by Customer Segment", ["All"] + claims_df["Customer_Segment"].unique().tolist())
-
-    filtered_claims_df = claims_df.copy()
-    if status_filter != "All":
-        filtered_claims_df = filtered_claims_df[claims_df["Status"] == status_filter]
-    if segment_filter_claims != "All":
-        filtered_claims_df = filtered_claims_df[claims_df["Customer_Segment"] == segment_filter_claims]
-
-    if status_filter != "All" or segment_filter_claims != "All":
-        st.session_state["history"].append(
-            f"Claims filter applied → Status: {status_filter}, Segment: {segment_filter_claims}"
-        )
-
-    st.dataframe(filtered_claims_df)
-
-    st.download_button(
-        label="⬇️ Download Claims Data (CSV)",
-        data=filtered_claims_df.to_csv(index=False).encode("utf-8"),
-        file_name="insurance_claims_results.csv",
-        mime="text/csv"
-    )
-
-    fig = px.histogram(filtered_claims_df, x="Status", color="Status", title="Claims Status Distribution")
-    st.plotly_chart(fig, use_container_width=True)
-
-    fig2 = px.pie(filtered_claims_df, names="Sentiment", title="Customer Sentiment on Claims")
-    st.plotly_chart(fig2, use_container_width=True)
-
-# -------------------------------
-# Page: Multilingual Processor
-# -------------------------------
 elif page == "Multilingual Processor":
-    st.title("Multilingual Text Processor")
+    st.header("🌍 Multilingual Processor")
 
-    selected_lang = st.selectbox("Choose language", list(LANG_MAP.keys()))
-    user_text = st.text_area("Enter text to process")
+    demo_texts = {
+        "English": "Hello, how can I help you today?",
+        "isiZulu": "Sawubona, ngingakusiza kanjani namuhla?",
+        "Sepedi": "Dumela, nka go thuša bjang lehono?",
+        "Xitsonga": "Xewani, ndzi nga ku pfuna njhani namuntlha?"
+    }
+
+    lang = st.selectbox("Select language", list(demo_texts.keys()))
+    use_demo = st.checkbox("Use demo dataset text")
+
+    if use_demo:
+        text = demo_texts[lang]
+        st.text_area("Demo text:", text, height=100, disabled=True)
+    else:
+        text = st.text_area("Enter text:")
 
     if st.button("Process"):
-        if user_text.strip():
-            try:
-                response = requests.post(
-                    f"{BACKEND_URL}/process",
-                    json={"input": user_text, "lang": LANG_MAP[selected_lang]}
-                )
-                if response.status_code == 200:
-                    st.success(response.json()["output"])
-                else:
-                    st.error(f"Backend error: {response.status_code}")
-            except Exception as e:
-                st.error(f"Connection failed: {e}")
-        else:
-            st.warning("Please enter some text before processing.")
-
-# -------------------------------
-# Page: Logs
-# -------------------------------
-elif page == "Logs":
-    st.title("Backend Logs")
-    try:
-        response = requests.get(f"{BACKEND_URL}/logs")
-        if response.status_code == 200:
-            logs = response.json().get("logs", [])
-            if logs:
-                st.write("### Recent Logs")
-                df = pd.DataFrame(logs)
-                st.dataframe(df, use_container_width=True)
+        if validate_non_empty(text) and validate_language(lang):
+            payload = {"input": text, "lang": lang}
+            response = requests.post(f"{BACKEND_URL}/process", json=payload)
+            if response.ok:
+                result = response.json()
+                st.success(result["output"])
+                log_history(f"Processed text in {lang}")
             else:
-                st.info("No logs available yet.")
+                st.error("Backend error.")
         else:
-            st.error(f"Backend error: {response.status_code}")
-    except Exception as e:
-        st.error(f"Connection failed: {e}")
+            st.error("Invalid input or language.")
 
-# -------------------------------
-# Page: History
-# -------------------------------
-elif page == "History":
-    st.header("History Tracker")
-    if st.session_state["history"]:
-        for entry in st.session_state["history"]:
-            st.write(f"- {entry}")
+elif page == "Mock Data Demo":
+    st.header("📊 Multilingual Mock Data Demo")
+
+    demo_queries = {
+        "English": "What is my account balance?",
+        "isiZulu": "Iyini ibhalansi yami ye-akhawunti?",
+        "Sepedi": "Ke bokae tšhelete ye e šetšego ka akhaonteng ya ka?",
+        "Xitsonga": "Xana mali ya mina ya akhawunti i njhani?"
+    }
+
+    lang = st.selectbox("Select language", list(demo_queries.keys()))
+    query = demo_queries[lang]
+
+    st.markdown("### Demo Query")
+    st.write(f"**{lang}:** {query}")
+
+    if st.button("Run Demo Query"):
+        payload = {"input": query, "lang": lang}
+        response = requests.post(f"{BACKEND_URL}/process", json=payload)
+        if response.ok:
+            result = response.json()
+            st.success(f"Processed Output → {result['output']}")
+            log_history(f"Demo query processed in {lang}")
+        else:
+            st.error("Backend error.")
+
+    st.markdown("### All Demo Queries")
+    df = pd.DataFrame(list(demo_queries.items()), columns=["Language", "Query"])
+    st.dataframe(df)
+
+elif page == "NLP Demo":
+    st.header("🧠 NLP Demo")
+    text = st.text_area("Enter text for NLP demo:")
+    lang = st.selectbox("Select language", ["English", "isiZulu", "Sepedi", "Xitsonga"])
+    if st.button("Run NLP"):
+        if validate_non_empty(text) and validate_language(lang):
+            payload = {"input": text, "lang": lang}
+            response = requests.post(f"{BACKEND_URL}/process", json=payload)
+            if response.ok:
+                result = response.json()
+                st.success(f"NLP Output → {result['output']}")
+                log_history(f"NLP Demo run in {lang}")
+            else:
+                st.error("Backend error.")
+        else:
+            st.error("Invalid input or language.")
+
+elif page == "Logs":
+    st.header("📝 Backend Logs")
+    response = requests.get(f"{BACKEND_URL}/logs")
+    if response.ok:
+        logs = response.json()["logs"]
+        if logs:
+            df = pd.DataFrame(logs)
+            st.dataframe(df)
+        else:
+            st.info("No logs available yet.")
+        log_history("Viewed Backend Logs")
     else:
-        st.write("No filters applied yet.")
-    if st.button("🗑️ Clear History"):
-        st.session_state["history"] = []
-        st.success("History cleared successfully.")
+        st.error("Failed to fetch logs.")
 
-# -------------------------------
-# Page: Settings
-# -------------------------------
+elif page == "History":
+    st.header("📜 History")
+    show_history()
+
 elif page == "Settings":
-    st.header("Settings")
-    st.selectbox("Choose NLP Engine", ["HuggingFace", "SparkNLP"])
-    st.radio("Theme", ["Light", "Dark"])
-    st.write("Version: 1.0.0")
+    st.header("⚙️ Settings")
+    st.info("Settings placeholder.")
 
-# -------------------------------
-# Page: About
-# -------------------------------
 elif page == "About":
-    st.title("About StreamIQ")
+    st.header("ℹ️ About StreamIQ Demo")
     st.markdown("""
-    StreamIQ is a modular NLP pipeline designed for banks, insurers, and call centers.  
+    **StreamIQ** is an enterprise-ready NLP demo platform.
+
+    - **Frontend:** Streamlit multi-page dashboard with modular navigation  
+    - **Backend:** Flask API running on `http://localhost:8000`  
+    - **Features:**  
+        - Multilingual text processing (English, isiZulu, Sepedi, Xitsonga)  
+        - Call center and insurance claims analytics  
+        - Mock datasets for banking, insurance, and call centers  
+        - Persistent history logging with SQLite  
+        - Exportable logs and audit trail  
+
+    This demo is designed for **stakeholder presentations** and **enterprise polish**.
+    """)

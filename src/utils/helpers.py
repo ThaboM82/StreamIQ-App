@@ -1,33 +1,28 @@
-import datetime
+import sqlite3
+import os
+import streamlit as st
 
-def clean_text(text: str) -> str:
-    """
-    Basic text cleaning: strip whitespace and lowercase.
+# Use the same DB path as backend
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "streamiq", "streamiq_logs.db")
 
-    Parameters
-    ----------
-    text : str
-        Input text
+def log_history(entry: str):
+    """Insert a dashboard action into the unified logs table."""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT INTO logs (event) VALUES (?)", (entry,))
+    conn.commit()
+    conn.close()
 
-    Returns
-    -------
-    str
-        Cleaned text
-    """
-    return text.strip().lower()
+def show_history(limit: int = 50):
+    """Display recent logs (backend + dashboard) in Streamlit."""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT event, timestamp FROM logs ORDER BY timestamp DESC LIMIT ?", (limit,))
+    rows = c.fetchall()
+    conn.close()
 
-def format_timestamp(ts: datetime.datetime) -> str:
-    """
-    Format datetime into ISO string.
+    if rows:
+        st.dataframe([{"event": row[0], "timestamp": row[1]} for row in rows])
+    else:
+        st.info("No history available yet.")
 
-    Parameters
-    ----------
-    ts : datetime.datetime
-        Datetime object
-
-    Returns
-    -------
-    str
-        ISO formatted string
-    """
-    return ts.isoformat()

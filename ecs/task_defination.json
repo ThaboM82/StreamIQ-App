@@ -1,37 +1,48 @@
- 
-{
+ {
   "family": "streamiq-task",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "512",
-  "memory": "1024",
-  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "cpu": "1024",
+  "memory": "2048",
   "containerDefinitions": [
     {
-      "name": "streamiq-app",
-      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/streamiq-app:latest",
+      "name": "backend",
+      "image": "your-dockerhub-username/streamiq-backend:latest",
       "essential": true,
       "portMappings": [
-        {
-          "containerPort": 8501,
-          "hostPort": 8501,
-          "protocol": "tcp"
-        }
+        { "containerPort": 8000, "hostPort": 8000 }
       ],
       "environment": [
-        {
-          "name": "NLP_ENGINE",
-          "value": "hf"
-        }
+        { "name": "NLP_ENGINE", "value": "hf" },
+        { "name": "DB_HOST", "value": "db" },
+        { "name": "DB_PORT", "value": "3306" },
+        { "name": "DB_USER", "value": "root" },
+        { "name": "DB_PASSWORD", "value": "root" },
+        { "name": "DB_NAME", "value": "streamiq" }
+      ]
+    },
+    {
+      "name": "dashboard",
+      "image": "your-dockerhub-username/streamiq-dashboard:latest",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 8501, "hostPort": 8501 }
       ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/streamiq",
-          "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
+      "environment": [
+        { "name": "BACKEND_URL", "value": "http://backend:8000" }
+      ]
+    },
+    {
+      "name": "db",
+      "image": "mysql:8.0",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 3306, "hostPort": 3306 }
+      ],
+      "environment": [
+        { "name": "MYSQL_ROOT_PASSWORD", "value": "root" },
+        { "name": "MYSQL_DATABASE", "value": "streamiq" }
+      ]
     }
   ]
 }

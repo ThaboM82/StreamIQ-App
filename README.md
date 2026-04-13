@@ -1,12 +1,41 @@
 # StreamIQ – Real-Time Customer Intelligence 🚀
 
-[![CI/CD Pipeline](https://github.com/ThaboM82/streamiq/actions/workflows/github_actions.yml/badge.svg)]()
-[![Coverage Status](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)]()
-[![Docker Build](https://img.shields.io/badge/docker-ready-green.svg)]()
-[![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)]()
-[![AWS ECS](https://img.shields.io/badge/deploy-ecs-orange.svg)]()
+[![CI/CD Deploy to ECS](https://github.com/ThaboM82/StreamIQ/actions/workflows/deploy.yml/badge.svg)](https://github.com/ThaboM82/StreamIQ/actions/workflows/deploy.yml)
+[![Build Status](https://github.com/ThaboM82/StreamIQ/actions/workflows/tests.yml/badge.svg)](https://github.com/ThaboM82/StreamIQ/actions/workflows/tests.yml)
+![Python Tests](https://github.com/ThaboM82/StreamIQ/actions/workflows/github_actions.yml/badge.svg)
+[![codecov](https://codecov.io/gh/ThaboM82/StreamIQ/branch/main/graph/badge.svg)](https://codecov.io/gh/ThaboM82/StreamIQ)
+![Docker Build](https://img.shields.io/badge/docker-ready-green.svg)
+![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)
+![AWS ECS](https://img.shields.io/badge/deploy-ecs-orange.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
+## Problem Statement
+
+Banks, insurers, and call centers process **millions of customer conversations daily** across multiple languages. These interactions contain critical insights about customer needs, fraud risks, and compliance obligations.  
+
+Yet organizations face several challenges:
+- **Fragmented NLP pipelines** — existing solutions are siloed, hard to integrate, and difficult to scale.  
+- **Lack of enterprise polish** — demos often rely on toy datasets or crash due to missing services, undermining stakeholder confidence.  
+- **Limited multilingual support** — most pipelines fail to capture the richness of South African languages, leaving gaps in customer understanding.  
+- **Poor reproducibility** — manual troubleshooting and environment drift make deployments unreliable across Windows, Docker, and cloud platforms.  
+
+As a result, valuable business intelligence remains locked inside raw conversations, and stakeholders struggle to see the impact of NLP in a production‑ready way.
+
+---
+
+## Solution
+
+**StreamIQ** solves this by providing a modular, enterprise‑ready NLP pipeline with:
+
+- **Dual NLP engines** (Hugging Face + Spark NLP) for flexibility and scalability.  
+- **Containerized deployment** via Docker + ECS for reproducibility and resilience.  
+- **Streamlit dashboards** with history tracking, audit trails, and export features for stakeholder demos.  
+- **Multilingual datasets** (English, Afrikaans, Zulu, Sepedi, Xitsonga) for authentic South African business resonance.  
+- **Automated workflows** (CI/CD, DVC, MLflow) ensuring reproducibility across environments.  
+
+StreamIQ bridges the gap between raw conversations and actionable insights, delivering demos that are polished, resilient, and ready for enterprise adoption.
+
 
 ## 📖 Overview
 **StreamIQ** is a modular, scalable NLP pipeline for **real-time customer intelligence** in banks, insurers, and call centers.  
@@ -16,7 +45,7 @@ It integrates:
 - 🧠 NLP (sentiment + intent classification)  
 - 📊 Satisfaction prediction  
 - 🗄️ MySQL persistence with Alembic migrations  
-- 📈 Recruiter-facing Streamlit dashboard  
+- 📈 Stakeholder-facing Streamlit dashboard  
 - 🔄 Full MLOps discipline with **MLflow** + **DVC**  
 - 🐳 Docker + ECS deployment with CI/CD automation  
 - ⚡ Dual NLP engines: **Spark NLP (big data)** + **Hugging Face (demo mode)**  
@@ -34,7 +63,7 @@ It integrates:
 - **GitHub Actions** – CI/CD automation
 - **MLflow** – experiment tracking
 - **DVC** – dataset + model versioning
-- **Pytest** – unit + integration tests
+- **Pytest + Pytest-Cov** – unit tests + coverage reporting
 
 ---
 
@@ -48,13 +77,47 @@ StreamIQ supports **dual NLP engines**:
   export NLP_ENGINE=spark
   python src/app.py
 
-Demo Mode (Hugging Face)  
-Lightweight mode for demos and local testing.
+✅ CI/CD & Quality Assurance
+StreamIQ includes a full CI/CD pipeline powered by GitHub Actions:
 
-Bash
+Automated Tests → Runs unit tests on every push/pull request.
 
-export NLP_ENGINE=hf
-python src/app.py
+Coverage Reports → Uploaded to Codecov for visibility.
+
+Docker Build → Ensures containerization is always production-ready.
+
+Deployment → Integrated with AWS ECS for enterprise scalability.
+
+Badges
+https://github.com/ThaboM82/StreamIQ/actions/workflows/github_actions.yml/badge.svg → Build & test status
+
+codecov (codecov.io in Bing) → Coverage percentage
+
+https://img.shields.io/badge/docker-ready-green.svg → Containerization status
+
+https://img.shields.io/badge/python-3.11-blue.svg → Runtime version
+
+https://img.shields.io/badge/deploy-ecs-orange.svg → Deployment target
+
+📊 Dashboard Features
+Sidebar toggle for English vs Multilingual datasets
+
+Satisfaction prediction with sentiment + intent analysis
+
+Audit logs and user management via FastAPI
+
+Metrics page with accuracy, precision, recall, F1 score, and confusion matrix heatmap
+
+🚀 Next Steps
+Add Codecov badge for coverage percentage (already scaffolded).
+
+Extend evaluation pipeline to dynamically compute metrics from real predictions.
+
+Polish dashboard visuals for stakeholder demos.
+
+---
+
+👉 This README now reflects **everything we scaffolded**: CI/CD pipeline, Codecov integration, badges, multilingual dashboard, and metrics visualization.  
 
 📂 Project Structure
 StreamIQ/

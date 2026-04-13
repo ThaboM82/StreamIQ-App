@@ -1,12 +1,23 @@
 [server]
-headless = true
-port = 8501
+# Run on a custom port to avoid conflicts
+port = 8503
+
+# Allow cross-origin requests (disable CORS)
 enableCORS = false
 
+# Disable XSRF protection so CORS can be disabled cleanly
+enableXsrfProtection = false
+
+# Automatically open the app in your default browser
+headless = false
+
+# Watch for file changes and auto-reload
+fileWatcherType = "auto"
+
 [theme]
+# Polished dashboard theme
 primaryColor = "#4CAF50"
 backgroundColor = "#FFFFFF"
 secondaryBackgroundColor = "#F0F2F6"
 textColor = "#000000"
 font = "sans serif"
-

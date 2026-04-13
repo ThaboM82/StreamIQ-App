@@ -1,26 +1,63 @@
-import logging
+import sqlite3
+from datetime import datetime
 
-def get_logger(name: str) -> logging.Logger:
-    """
-    Create and configure a logger.
+DB_FILE = "streamiq.db"
 
-    Parameters
-    ----------
-    name : str
-        Name of the logger (usually __name__)
-
-    Returns
-    -------
-    logging.Logger
-        Configured logger instance
-    """
-    logger = logging.getLogger(name)
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+# -------------------------------
+# Database Initialization
+# -------------------------------
+def init_db():
+    """Initialize the SQLite database with logs table if not exists."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            event TEXT NOT NULL,
+            log_type TEXT NOT NULL
         )
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-    return logger
+    """)
+    conn.commit()
+    conn.close()
+
+# -------------------------------
+# Add Log Entry
+# -------------------------------
+def add_log(event: str, log_type: str = "INFO"):
+    """Insert a new log entry into the database."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO logs (timestamp, event, log_type) VALUES (?, ?, ?)",
+        (datetime.now().isoformat(), event, log_type.upper())
+    )
+    conn.commit()
+    conn.close()
+
+# -------------------------------
+# Get Logs
+# -------------------------------
+def get_logs(limit: int = 100):
+    """Retrieve logs from the database, newest first."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT timestamp, event, log_type FROM logs ORDER BY id DESC LIMIT ?",
+        (limit,)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+
+    return [{"timestamp": r[0], "event": r[1], "log_type": r[2]} for r in rows]
+
+# -------------------------------
+# Clear Logs (optional for demos)
+# -------------------------------
+def clear_logs():
+    """Delete all logs from the database (useful for demo resets)."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM logs")
+    conn.commit()
+    conn.close()

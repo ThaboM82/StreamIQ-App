@@ -1,33 +1,45 @@
 import streamlit as st
-import os
+import mlflow
+import pandas as pd
 
-st.set_page_config(page_title="StreamIQ Evaluation Dashboard", layout="wide")
+def fetch_runs(experiment_name: str):
+    """
+    Fetch MLflow runs for a given experiment.
+    """
+    client = mlflow.tracking.MlflowClient()
+    experiment = client.get_experiment_by_name(experiment_name)
+    if not experiment:
+        return pd.DataFrame()
 
-st.title("📊 StreamIQ Model Evaluation Dashboard")
+    runs = client.search_runs([experiment.experiment_id])
+    records = []
+    for run in runs:
+        record = {"run_id": run.info.run_id}
+        record.update(run.data.params)
+        record.update(run.data.metrics)
+        records.append(record)
+    return pd.DataFrame(records)
 
-# --- Metrics Section ---
-st.header("Evaluation Metrics")
-metrics_path = "C:/StreamIQ App/data/metrics.txt"
+def main():
+    st.title("📈 Model Evaluation")
 
-if os.path.exists(metrics_path):
-    with open(metrics_path, "r") as f:
-        metrics_text = f.read()
-    st.text(metrics_text)
-else:
-    st.warning("⚠️ Metrics file not found. Run evaluation to generate metrics.")
+    st.write("View metrics and parameters logged in MLflow experiments.")
 
-# --- Confusion Matrix Heatmap Section ---
-st.header("Confusion Matrix Heatmap")
-cm_img_path = "C:/StreamIQ App/data/confusion_matrix.png"
+    experiment_name = st.text_input("Experiment name:", "StreamlitPredictionDemo")
 
-if os.path.exists(cm_img_path):
-    st.image(cm_img_path, caption="Confusion Matrix", use_column_width=True)
-else:
-    st.warning("⚠️ Confusion matrix image not found. Run evaluation to generate the heatmap.")
+    if st.button("Load Metrics"):
+        df = fetch_runs(experiment_name)
+        if df.empty:
+            st.warning("No runs found for this experiment.")
+        else:
+            st.write("### Experiment Runs")
+            st.dataframe(df)
 
-# --- Optional polish: Add sidebar info ---
-st.sidebar.title("Pipeline Status")
-st.sidebar.info(
-    "This dashboard displays the latest evaluation results.\n\n"
-    "Run `dvc repro --force` to refresh metrics and visuals."
-)
+            # Show metrics summary
+            metric_cols = [col for col in df.columns if col not in ["run_id"]]
+            if metric_cols:
+                st.write("### Metrics Overview")
+                st.bar_chart(df[metric_cols])
+
+if __name__ == "__main__":
+    main()

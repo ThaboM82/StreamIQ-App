@@ -1,7 +1,12 @@
 import sqlite3
+import os
 from datetime import datetime
 
-DB_FILE = "streamiq.db"
+# Resolve the repo root (two levels up from utils)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Point to the backend database file
+DB_FILE = os.path.join(BASE_DIR, "backend", "streamiq.db")
 
 # -------------------------------
 # Database Initialization
@@ -24,8 +29,11 @@ def init_db():
 # -------------------------------
 # Add Log Entry
 # -------------------------------
-def add_log(event: str, log_type: str = "INFO"):
-    """Insert a new log entry into the database."""
+def add_log(event: str, log_type: str = "BACKEND"):
+    """
+    Insert a new log entry into the database.
+    Default log_type is 'BACKEND' to distinguish backend events.
+    """
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute(

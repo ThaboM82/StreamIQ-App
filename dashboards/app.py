@@ -1,10 +1,13 @@
 import streamlit as st
 import pandas as pd
 import requests
+import sqlite3
+import os
+
 from src.utils.helpers import log_history, show_history
 from src.utils.session_state_initializer import init_session_state
 from src.utils.validators import validate_language, validate_non_empty, validate_domain
-from src.utils.logger import init_db
+from src.utils.logger import init_db, get_logs, clear_logs
 
 # -------------------------------
 # Initialization
@@ -161,6 +164,16 @@ elif page == "Logs":
         if logs:
             df = pd.DataFrame(logs)
             st.dataframe(df)
+
+            # Export buttons
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button("⬇️ Download Logs as CSV", csv, "backend_logs.csv", "text/csv")
+
+            excel_path = "backend_logs.xlsx"
+            df.to_excel(excel_path, index=False)
+            with open(excel_path, "rb") as f:
+                st.download_button("⬇️ Download Logs as Excel", f, "backend_logs.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
         else:
             st.info("No logs available yet.")
         log_history("Viewed Backend Logs")
@@ -170,6 +183,48 @@ elif page == "Logs":
 elif page == "History":
     st.header("📜 History")
     show_history()
+
+    # Export unified history
+    logs = get_logs(limit=200)
+    if logs:
+        df = pd.DataFrame(logs)
+        st.dataframe(df)
+
+        csv = df.to_csv(index=False).encode("utf-8")
+        st.download_button("⬇️ Download History as CSV", csv, "history_logs.csv", "text/csv")
+
+        excel_path = "history_logs.xlsx"
+        df.to_excel(excel_path, index=False)
+        with open(excel_path, "rb") as f:
+            st.download_button("⬇️ Download History as Excel", f, "history_logs.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+        # Clear history with confirmation
+        if st.button("🗑️ Clear History"):
+            if st.checkbox("Confirm clear history"):
+                clear_logs()
+                st.warning("History cleared successfully.")
+                log_history("Cleared history logs")
+            else:
+                st.info("Please check 'Confirm clear history' before clearing.")
+
+        # Demo Reset button (clears both backend and dashboard logs)
+        if st.button("🔄 Demo Reset"):
+            if st.checkbox("Confirm demo reset"):
+                # Clear dashboard logs
+                clear_logs()
+                # Clear backend logs via API
+                try:
+                    response = requests.post(f"{BACKEND_URL}/clear_logs")
+                    if response.ok:
+                        st.warning("Backend logs cleared successfully.")
+                    else:
+                        st.error("Failed to clear backend logs.")
+                except Exception as e:
+                    st.error(f"Error clearing backend logs: {e}")
+                st.success("Demo reset complete — all logs cleared.")
+                log_history("Performed demo reset (backend + dashboard)")
+            else:
+                st.info("Please check 'Confirm demo reset' before resetting.")
 
 elif page == "Settings":
     st.header("⚙️ Settings")
@@ -188,6 +243,8 @@ elif page == "About":
         - Mock datasets for banking, insurance, and call centers  
         - Persistent history logging with SQLite  
         - Exportable logs and audit trail  
+        - Clear history reset with confirmation  
+        - Demo Reset button to clear both backend and dashboard logs  
 
     This demo is designed for **stakeholder presentations** and **enterprise polish**.
     """)

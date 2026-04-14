@@ -1,70 +1,102 @@
-# -------------------------------
-# Python virtual environments
-# -------------------------------
+# =========================
+# Python / Virtual Environment
+# =========================
 venv/
-venv311/
-
-# -------------------------------
-# Python bytecode and caches
-# -------------------------------
+*.pyc
+*.pyo
+*.pyd
 __pycache__/
-*.py[cod]
-*$py.class
+*.so
 
-# -------------------------------
-# Build / packaging artifacts
-# -------------------------------
-*.egg-info/
-dist/
-build/
-*.egg
-.eggs/
-
-# -------------------------------
-# Logs, databases, and runtime files
-# -------------------------------
-*.log
-*.db
-*.sqlite
-launch_log.txt
-streamiq_logs.db
+# =========================
+# Project Databases & Artifacts
+# =========================
 streamiq.db
+*.sqlite
+*.db
+*.bak
+*.tmp
 
-# -------------------------------
-# StreamIQ demo artifacts
-# -------------------------------
-StreamIQ-App/
-StreamIQ App - Shortcut.lnk
-utils/
+# =========================
+# Logs & History
+# =========================
+logs/
+*.log
+*.out
+*.err
+.history/
+.streamlit/
 
-# -------------------------------
-# Environment and secrets
-# -------------------------------
+# =========================
+# Environment & Config
+# =========================
 .env
-*.env
+.env.*
+*.ini
+*.toml
 
-# -------------------------------
-# IDE/editor settings
-# -------------------------------
-.vscode/
-.idea/
+# =========================
+# Build / Packaging
+# =========================
+build/
+dist/
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+
+# =========================
+# Cache & Temp
+# =========================
+.cache/
 *.swp
 *.swo
-
-# -------------------------------
-# OS-specific clutter
-# -------------------------------
-Thumbs.db
+*.pid
+*.sock
 .DS_Store
-desktop.ini
+Thumbs.db
 
-# -------------------------------
-# Repo hygiene extras
-# -------------------------------
-# Ignore batch/PowerShell scripts if generated for demo automation
+# =========================
+# Jupyter / Notebooks
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Workflow & MLOps
+# =========================
+.dvc/
+.dvcignore
+.mlflow/
+.mlflow-artifacts/
+.dvc-temp/
+
+# =========================
+# Docker
+# =========================
+docker-compose.override.yml
+*.pid
+*.sock
+
+# =========================
+# Testing / Coverage
+# =========================
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
+# =========================
+# Windows Shortcuts / Batch
+# =========================
+*.lnk
 *.bat
 *.ps1
 
-# Ignore cache directories
-.cache/
-*.bak
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.iml

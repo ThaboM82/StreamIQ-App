@@ -1,0 +1,70 @@
+# -------------------------------
+# Python virtual environments
+# -------------------------------
+venv/
+venv311/
+
+# -------------------------------
+# Python bytecode and caches
+# -------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# -------------------------------
+# Build / packaging artifacts
+# -------------------------------
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# -------------------------------
+# Logs, databases, and runtime files
+# -------------------------------
+*.log
+*.db
+*.sqlite
+launch_log.txt
+streamiq_logs.db
+streamiq.db
+
+# -------------------------------
+# StreamIQ demo artifacts
+# -------------------------------
+StreamIQ-App/
+StreamIQ App - Shortcut.lnk
+utils/
+
+# -------------------------------
+# Environment and secrets
+# -------------------------------
+.env
+*.env
+
+# -------------------------------
+# IDE/editor settings
+# -------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------------
+# OS-specific clutter
+# -------------------------------
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# -------------------------------
+# Repo hygiene extras
+# -------------------------------
+# Ignore batch/PowerShell scripts if generated for demo automation
+*.bat
+*.ps1
+
+# Ignore cache directories
+.cache/
+*.bak

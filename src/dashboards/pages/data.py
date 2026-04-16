@@ -1,33 +1,34 @@
+# src/dashboards/pages/data.py
+
 import streamlit as st
-import pandas as pd
-from datetime import datetime
-from src.db.connection import get_db
-from src.db.models import AuditLog
+import requests
 
-# --- Logging helper ---
-def log_action(action: str):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    entry = {"action": action, "timestamp": timestamp}
-    if "history" not in st.session_state:
-        st.session_state["history"] = []
-    st.session_state["history"].append(entry)
+API_URL = "http://127.0.0.1:8000"
 
-    db = next(get_db())
-    db_entry = AuditLog(action=action, timestamp=datetime.now())
-    db.add(db_entry)
-    db.commit()
+def run():
+    st.title("📊 Audit Log Viewer")
 
-# --- Page content ---
-st.title("📊 Data Overview")
-log_action("Viewed Data Overview page")
+    # --- Add a new log entry ---
+    with st.form("add_log_form"):
+        event = st.text_input("Event description")
+        log_type = st.selectbox("Log type", ["DASHBOARD", "SYSTEM", "API"])
+        submitted = st.form_submit_button("Add Log")
 
-df = pd.DataFrame({
-    "CallID": [1, 2, 3],
-    "Sentiment": ["Positive", "Negative", "Neutral"],
-    "Duration": [300, 450, 200]
-})
+        if submitted and event.strip():
+            resp = requests.post(
+                f"{API_URL}/auditlog",
+                params={"event": event, "log_type": log_type}
+            )
+            if resp.status_code == 200:
+                st.success(f"Log added: {event} ({log_type})")
+            else:
+                st.error("Failed to add log")
 
-st.write("Here’s a sample of call center data:")
-st.dataframe(df)
-
-st.download_button("⬇️ Export Data CSV", df.to_csv(index=False), "data_overview.csv")
+    # --- Show recent logs ---
+    st.subheader("Recent Logs")
+    resp = requests.get(f"{API_URL}/auditlog", params={"limit": 50})
+    if resp.status_code == 200 and resp.json():
+        logs = resp.json()
+        st.dataframe(logs)
+    else:
+        st.info("No logs available yet.")

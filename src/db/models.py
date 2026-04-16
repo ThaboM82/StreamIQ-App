@@ -1,5 +1,6 @@
 # src/db/models.py
 from sqlalchemy import Column, Integer, String, Text, DateTime
+from datetime import datetime
 from .connection import Base
 
 class CallCenterRecord(Base):
@@ -19,3 +20,11 @@ class InsuranceClaim(Base):
     description = Column(Text)
     intent = Column(String(50))
     created_at = Column(DateTime)
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    event = Column(String(255))
+    log_type = Column(String(50))

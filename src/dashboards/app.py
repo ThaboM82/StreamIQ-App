@@ -1,21 +1,21 @@
 import sys
 import os
-
-# Add project root (C:\StreamIQ App) to sys.path
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
-
 import streamlit as st
 import pandas as pd
 import requests
+import altair as alt
+from datetime import datetime
+
+# Add project root (C:\StreamIQ App) to sys.path
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 # imports from src.utils
 from src.utils.helpers import log_history, show_history
 from src.utils.session_state_initializer import init_session_state
 from src.utils.validators import validate_language, validate_non_empty, validate_domain
 from src.utils.logger import init_db, add_log, get_logs, clear_logs
-
 
 # -------------------------------
 # Initialization
@@ -36,48 +36,81 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.sidebar.title("📂 StreamIQ Navigation")
+# Branding
+st.sidebar.image("assets/streamiq_logo.png", use_column_width=True)
+st.sidebar.markdown("### StreamIQ")
+st.sidebar.caption("Enterprise NLP Demo")
 
-page = st.sidebar.radio(
-    "Navigate",
-    [
-        "Home",
-        "⚙️ Pipeline",
-        "📞 Call Center Results",
-        "📑 Insurance Claims Results",
-        "🌍 Multilingual Processor",
-        "📊 Mock Data Demo",
-        "🧠 NLP Demo",
-        "📝 Logs",
-        "📜 History",
-        "⚙️ Settings",
-        "ℹ️ About"
-    ]
+# Theme Toggle
+theme = st.sidebar.radio("Theme", ["🌞 Light", "🌙 Dark"], index=0)
+
+if theme == "🌞 Light":
+    primary_color = "#0078D4"
+    secondary_color = "#00B294"
+    background_color = "#F5F5F5"
+    text_color = "#2B2B2B"
+    grid_color = "#E0E0E0"
+    row_even = "#FFFFFF"
+    row_odd = "#F0F0F0"
+else:
+    primary_color = "#00B294"
+    secondary_color = "#0078D4"
+    background_color = "#1E1E1E"
+    text_color = "#FFFFFF"
+    grid_color = "#444444"
+    row_even = "#2B2B2B"
+    row_odd = "#1E1E1E"
+
+# Apply theme styling
+st.markdown(
+    f"""
+    <style>
+        .main {{
+            background-color: {background_color};
+            color: {text_color};
+        }}
+        .stButton>button {{
+            background-color: {primary_color};
+            color: white;
+            border-radius: 4px;
+            border: none;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True
 )
 
-# Sidebar polish sections
-st.sidebar.markdown("### 🔎 Data Exploration")
-st.sidebar.info("Explore datasets and Spark summaries.")
-st.sidebar.markdown("- Call Center Results\n- Insurance Claims Results")
+# Backend Health Check
+try:
+    response = requests.get(f"{BACKEND_URL}/")
+    if response.status_code == 200:
+        st.sidebar.success("✅ Backend is running")
+        st.sidebar.caption(f"Last checked: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    else:
+        st.sidebar.error("❌ Backend not responding")
+except Exception:
+    st.sidebar.error("❌ Backend unreachable")
 
-st.sidebar.markdown("### 🤖 NLP & Prediction")
-st.sidebar.info("Run multilingual processing and NLP demos.")
-st.sidebar.markdown("- Multilingual Processor\n- NLP Demo")
+# Sleek two-level navigation
+category = st.sidebar.selectbox(
+    "Category",
+    ["🏠 Home", "📊 Data", "🤖 NLP", "🎓 Training", "📈 Logs", "⚙️ Settings & ℹ️ Info"]
+)
 
-st.sidebar.markdown("### 📊 Mock Data")
-st.sidebar.info("Explore multilingual mock datasets.")
-st.sidebar.markdown("- Mock Data Demo")
-
-st.sidebar.markdown("### 📈 Evaluation & Logs")
-st.sidebar.info("View pipeline status and backend logs.")
-st.sidebar.markdown("- Pipeline\n- Logs")
-
-st.sidebar.markdown("### 📜 Audit Trail")
-st.sidebar.info("View and export history.")
-st.sidebar.markdown("- History")
-
-st.sidebar.markdown("### ⚙️ Settings & Info")
-st.sidebar.markdown("- Settings\n- About")
+if category == "🏠 Home":
+    page = "Home"
+elif category == "📊 Data":
+    page = st.sidebar.radio("Navigate", ["⚙️ Pipeline", "📞 Call Center Results", "📑 Insurance Claims Results", "📊 Big Data Demo"])
+elif category == "🤖 NLP":
+    page = st.sidebar.radio("Navigate", ["🌍 Multilingual Processor", "📊 Mock Data Demo", "🧠 NLP Demo", "🎯 Model Prediction"])
+elif category == "🎓 Training":
+    page = st.sidebar.radio("Navigate", ["🧪 Training Demo", "📈 Model Evaluation"])
+elif category == "📈 Logs":
+    page = st.sidebar.radio("Navigate", ["📝 Backend Logs", "📜 History"])
+elif category == "⚙️ Settings & ℹ️ Info":
+    page = st.sidebar.radio("Navigate", ["⚙️ Settings", "ℹ️ About"])
+else:
+    page = "Home"
 
 st.sidebar.markdown("---")
 st.sidebar.success("Enterprise‑ready demo pipeline 🚀")
@@ -89,21 +122,14 @@ st.sidebar.success("Enterprise‑ready demo pipeline 🚀")
 if page == "Home":
     st.header("🏠 Welcome to StreamIQ")
     st.write("""
-    This dashboard showcases the full StreamIQ demo pipeline:
-    - 📊 Big Data exploration with Spark
-    - 🤖 NLP intent prediction
-    - 🛠️ Training simulation with MLflow logging
-    - 📈 Evaluation with metrics and confusion matrix
-    - 📜 Audit trail with exportable history
+    StreamIQ is an enterprise-ready NLP demo platform.
+    Use the sidebar to explore:
+    - 📊 Data exploration
+    - 🤖 NLP prediction
+    - 🎓 Training simulation
+    - 📈 Evaluation metrics
+    - 📜 Audit trail
     """)
-    query = st.text_input("Enter a query:")
-    if st.button("Submit"):
-        if validate_non_empty(query):
-            add_log("User query submitted", log_type="ACTION")
-            log_history(f"User query: {query}")
-            st.success("Query logged successfully.")
-        else:
-            st.error("Please enter a valid query.")
 
 elif page == "⚙️ Pipeline":
     st.header("⚙️ Pipeline Status")
@@ -112,195 +138,145 @@ elif page == "⚙️ Pipeline":
 
 elif page == "📞 Call Center Results":
     st.header("📞 Call Center Analytics")
-    df = pd.DataFrame({
-        "Agent": ["Alice", "Bob", "Charlie"],
-        "Calls": [120, 95, 110],
-        "Satisfaction": [0.92, 0.85, 0.88]
-    })
-    st.dataframe(df)
-    log_history("Viewed Call Center Results")
-    add_log("Viewed Call Center Results", log_type="INFO")
+
+    # --- Form to add new record ---
+    with st.form("callcenter_form"):
+        customer_id = st.text_input("Customer ID")
+        transcript = st.text_area("Transcript")
+        sentiment = st.selectbox("Sentiment", ["Positive", "Neutral", "Negative"])
+        submitted = st.form_submit_button("Add Record")
+
+        if submitted:
+            payload = {"customer_id": customer_id, "transcript": transcript, "sentiment": sentiment}
+            response = requests.post(f"{BACKEND_URL}/callcenter", json=payload)
+            if response.ok:
+                st.success("Record added successfully!")
+                log_history(f"Added Call Center Record for {customer_id}")
+                add_log("Added Call Center Record", log_type="ACTION")
+            else:
+                st.error("Failed to add record.")
+
+    # --- Display records ---
+    try:
+        response = requests.get(f"{BACKEND_URL}/callcenter?limit=50")
+        if response.ok:
+            df = pd.DataFrame(response.json())
+            st.dataframe(df, use_container_width=True)
+            st.download_button("⬇️ Download Data (CSV)", df.to_csv(index=False), "call_center_results.csv")
+        else:
+            st.error("Failed to fetch records.")
+    except Exception as e:
+        st.error(f"Error fetching records: {e}")
 
 elif page == "📑 Insurance Claims Results":
     st.header("📑 Insurance Claims Analytics")
-    df = pd.DataFrame({
-        "ClaimID": [101, 102, 103],
-        "Amount": [5000, 12000, 7500],
-        "Status": ["Approved", "Pending", "Rejected"]
-    })
-    st.dataframe(df)
-    log_history("Viewed Insurance Claims Results")
-    add_log("Viewed Insurance Claims Results", log_type="INFO")
+
+    # --- Form to add new claim ---
+    with st.form("claims_form"):
+        claim_id = st.text_input("Claim ID")
+        description = st.text_area("Description")
+        intent = st.selectbox("Intent", ["Approval", "Rejection", "Pending"])
+        submitted = st.form_submit_button("Add Claim")
+
+        if submitted:
+            payload = {"claim_id": claim_id, "description": description, "intent": intent}
+            response = requests.post(f"{BACKEND_URL}/claims", json=payload)
+            if response.ok:
+                st.success("Claim added successfully!")
+                log_history(f"Added Insurance Claim {claim_id}")
+                add_log("Added Insurance Claim", log_type="ACTION")
+            else:
+                st.error("Failed to add claim.")
+
+    # --- Display claims ---
+    try:
+        response = requests.get(f"{BACKEND_URL}/claims?limit=50")
+        if response.ok:
+            df = pd.DataFrame(response.json())
+            st.dataframe(df, use_container_width=True)
+            st.download_button("⬇️ Download Claims (CSV)", df.to_csv(index=False), "insurance_claims.csv")
+        else:
+            st.error("Failed to fetch claims.")
+    except Exception as e:
+        st.error(f"Error fetching claims: {e}")
+
+elif page == "📊 Big Data Demo":
+    st.header("📊 Big Data Demo")
+    try:
+        response = requests.get(f"{BACKEND_URL}/bigdata?limit=50")
+        if response.ok:
+            df = pd.DataFrame(response.json())
+            st.dataframe(df, use_container_width=True)
+            st.download_button("⬇️ Download Big Data (CSV)", df.to_csv(index=False), "big_data_demo.csv")
+        else:
+            st.error("Failed to fetch Big Data Demo records.")
+    except Exception as e:
+        st.error(f"Error fetching Big Data Demo: {e}")
 
 elif page == "🌍 Multilingual Processor":
     st.header("🌍 Multilingual Processor")
 
-    demo_texts = {
-        "English": "Hello, how can I help you today?",
-        "isiZulu": "Sawubona, ngingakusiza kanjani namuhla?",
-        "Sepedi": "Dumela, nka go thuša bjang lehono?",
-        "Xitsonga": "Xewani, ndzi nga ku pfuna njhani namuntlha?"
-    }
-
-    lang = st.selectbox("Select language", list(demo_texts.keys()))
-    use_demo = st.checkbox("Use demo dataset text")
-
-    if use_demo:
-        text = demo_texts[lang]
-        st.text_area("Demo text:", text, height=100, disabled=True)
-    else:
-        text = st.text_area("Enter text:")
-
-    if st.button("Process"):
-        if validate_non_empty(text) and validate_language(lang):
-            payload = {"input": text, "lang": lang}
-            response = requests.post(f"{BACKEND_URL}/process", json=payload)
-            if response.ok:
-                result = response.json()
-                st.success(result["output"])
-                log_history(f"Processed text in {lang}")
-                add_log(f"Processed text in {lang}", log_type="ACTION")
-            else:
-                st.error("Backend error.")
-                add_log("Backend error in Multilingual Processor", log_type="ERROR")
+    text = st.text_area("Enter text:")
+    lang = st.selectbox("Select language", ["English", "isiZulu", "Sepedi", "Xitsonga"])
+    if st.button("Process Text"):
+        payload = {"input": text, "lang": lang}
+        response = requests.post(f"{BACKEND_URL}/process", json=payload)
+        if response.ok:
+            result = response.json()
+            st.success(result.get("output", "No output returned"))
+            log_history(f"Processed text in {lang}")
+            add_log(f"Processed text in {lang}", log_type="ACTION")
         else:
-            st.error("Invalid input or language.")
-            add_log("Invalid input or language in Multilingual Processor", log_type="ERROR")
+            st.error("Failed to process text.")
 
 elif page == "📊 Mock Data Demo":
-    st.header("📊 Multilingual Mock Data Demo")
-
-    st.markdown("### Banking Queries")
-    banking_data = pd.DataFrame({
-        "Language": ["English", "isiZulu", "Sepedi", "Xitsonga"],
-        "Query": [
-            "What is my account balance?",
-            "Iyini ibhalansi yami ye-akhawunti?",
-            "Ke bokae tšhelete ye e šetšego ka akhaonteng ya ka?",
-            "Xana mali ya mina ya akhawunti i njhani?"
-        ]
-    })
-    st.dataframe(banking_data)
-
-    st.markdown("### Insurance Claims")
-    insurance_data = pd.DataFrame({
-        "Language": ["English", "isiZulu", "Sepedi", "Xitsonga"],
-        "Query": [
-            "How do I submit a claim?",
-            "Ngiyifaka kanjani isimangalo sami?",
-            "Ke romela bjang kgopelo ya tshenyo?",
-            "Ndzi endla njhani xikombelo xa xihlawulo?"
-        ]
-    })
-    st.dataframe(insurance_data)
-
-    st.markdown("### Call Center Phrases")
-    callcenter_data = pd.DataFrame({
-        "Language": ["English", "isiZulu", "Sepedi", "Xitsonga"],
-        "Phrase": [
-            "Please hold while I transfer your call.",
-            "Ngicela ubambe ngizodlulisa ucingo lwakho.",
-            "Ke kgopela o emele ge ke fetisetsa moletšo wa gago.",
-            "Ndzi kombela u yimela loko ndzi hundzisa riqingho ra wena."
-        ]
-    })
-    st.dataframe(callcenter_data)
-
-    log_history("Viewed Multilingual Mock Data Demo")
-    add_log("Viewed Multilingual Mock Data Demo", log_type="INFO")
+    st.header("📊 Mock Data Demo")
+    st.info("Placeholder for mock data demo.")
 
 elif page == "🧠 NLP Demo":
     st.header("🧠 NLP Demo")
-    text = st.text_area("Enter text for NLP demo:")
-    lang = st.selectbox("Select language", ["English", "isiZulu", "Sepedi", "Xitsonga"])
-    if st.button("Run NLP"):
-        if validate_non_empty(text) and validate_language(lang):
-            st.success(f"NLP Demo processed ({lang}): {text}")
-            log_history(f"NLP Demo run in {lang}")
-            add_log(f"NLP Demo run in {lang}", log_type="ACTION")
-        else:
-            st.error("Invalid input or language.")
-            add_log("Invalid input or language in NLP Demo", log_type="ERROR")
+    st.info("Placeholder for NLP demo.")
 
-elif page == "📝 Logs":
+elif page == "🎯 Model Prediction":
+    from src.dashboards.pages import ModelPrediction
+    ModelPrediction.run()
+
+elif page == "🧪 Training Demo":
+    from src.dashboards.pages import training
+    training.run()
+
+elif page == "📈 Model Evaluation":
+    from src.dashboards.pages import evaluate
+    evaluate.run()
+
+elif page == "📝 Backend Logs":
     st.header("📝 Backend Logs")
-    response = requests.get(f"{BACKEND_URL}/logs")
-    if response.ok:
-        logs = response.json()["logs"]
-        for log in logs:
-            st.write(f"- {log['event']}")
-        log_history("Viewed Backend Logs")
-        add_log("Viewed Backend Logs", log_type="INFO")
-    else:
-        st.error("Failed to fetch logs.")
-        add_log("Failed to fetch backend logs", log_type="ERROR")
+    try:
+        response = requests.get(f"{BACKEND_URL}/auditlog?limit=50")
+        if response.ok:
+            logs = response.json()
+            df = pd.DataFrame(logs)
+            st.dataframe(df, use_container_width=True)
+            st.download_button("⬇️ Download Logs (CSV)", df.to_csv(index=False), "backend_logs.csv")
+            log_history("Viewed Backend Logs")
+            add_log("Viewed Backend Logs", log_type="INFO")
+        else:
+            st.error("Failed to fetch logs.")
+    except Exception as e:
+        st.error(f"Error fetching logs: {e}")
 
 elif page == "📜 History":
     st.header("📜 History")
     show_history()
-
-    # Advanced filters
-    st.subheader("Filter Logs")
-    start_date = st.date_input("Start date", value=datetime.today())
-    end_date = st.date_input("End date", value=datetime.today())
-    keyword = st.text_input("Keyword search")
-    log_type = st.selectbox("Log type", ["All", "INFO", "ERROR", "ACTION"])
-
-    logs = get_logs(limit=500)
-    if logs:
-        df = pd.DataFrame(logs)
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
-
-        # Apply filters
-        mask = (df["timestamp"].dt.date >= start_date) & (df["timestamp"].dt.date <= end_date)
-        filtered_df = df.loc[mask]
-
-        if keyword:
-            filtered_df = filtered_df[filtered_df["event"].str.contains(keyword, case=False, na=False)]
-        if log_type != "All":
-            filtered_df = filtered_df[filtered_df["event"].str.upper().str.startswith(log_type)]
-
-        st.dataframe(filtered_df)
-
-        # Export buttons
-        if not filtered_df.empty:
-            st.download_button(
-                label="⬇️ Download as CSV",
-                data=filtered_df.to_csv(index=False).encode("utf-8"),
-                file_name="audit_log.csv",
-                mime="text/csv"
-            )
-            st.download_button(
-                label="⬇️ Download as JSON",
-                data=filtered_df.to_json(orient="records", indent=2).encode("utf-8"),
-                file_name="audit_log.json",
-                mime="application/json"
-            )
-
-            # Visual analytics
-            st.subheader("📈 Log Analytics")
-
-            # Logs by type
-            type_counts = filtered_df["event"].str.split(":").str[0].value_counts()
-            st.bar_chart(type_counts)
-
-            # Logs by day
-            daily_counts = filtered_df.groupby(filtered_df["timestamp"].dt.date).size()
-            st.line_chart(daily_counts)
-
-            # Clear history button
-            if st.button("🗑️ Clear History"):
-                clear_logs()
-                st.success("History cleared successfully.")
-
-        else:
-            st.info("No logs found for the selected filters.")
-    else:
-        st.info("No history available yet.")
+    st.info("Audit trail of user actions and backend events.")
+    # Optional: add export
+    st.download_button("⬇️ Export History (CSV)", pd.DataFrame(get_logs()).to_csv(index=False), "history.csv")
 
 elif page == "⚙️ Settings":
     st.header("⚙️ Settings")
-    st.info("Settings placeholder. Configure StreamIQ options here.")
+    theme_choice = st.selectbox("Theme Preference", ["Light", "Dark"])
+    st.success(f"Theme set to {theme_choice}")
+    st.info("Additional configuration options can be added here.")
 
 elif page == "ℹ️ About":
     st.header("ℹ️ About StreamIQ Demo")
@@ -312,9 +288,9 @@ elif page == "ℹ️ About":
     - **Features:**  
         - Multilingual text processing (English, isiZulu, Sepedi, Xitsonga)  
         - Call center and insurance claims analytics  
-        - Mock datasets for banking, insurance, and call centers  
+        - Big Data demo integration  
         - Persistent history logging with SQLite  
         - Exportable logs and audit trail  
 
-    This demo is designed for **stakeholder presentations** and **enterprise polish**.
+    Designed for **stakeholder presentations** and **enterprise polish**.
     """)

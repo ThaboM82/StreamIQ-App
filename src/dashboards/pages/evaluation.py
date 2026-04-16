@@ -1,45 +1,36 @@
+# src/dashboards/pages/evaluate.py
 import streamlit as st
-import mlflow
+import requests
 import pandas as pd
 
-def fetch_runs(experiment_name: str):
-    """
-    Fetch MLflow runs for a given experiment.
-    """
-    client = mlflow.tracking.MlflowClient()
-    experiment = client.get_experiment_by_name(experiment_name)
-    if not experiment:
-        return pd.DataFrame()
+API_URL = "http://127.0.0.1:8000"
 
-    runs = client.search_runs([experiment.experiment_id])
-    records = []
-    for run in runs:
-        record = {"run_id": run.info.run_id}
-        record.update(run.data.params)
-        record.update(run.data.metrics)
-        records.append(record)
-    return pd.DataFrame(records)
-
-def main():
+def run():
+    """Entry point for Streamlit sidebar navigation."""
     st.title("📈 Model Evaluation")
-
     st.write("View metrics and parameters logged in MLflow experiments.")
 
+    # Input for experiment name
     experiment_name = st.text_input("Experiment name:", "StreamlitPredictionDemo")
 
     if st.button("Load Metrics"):
-        df = fetch_runs(experiment_name)
-        if df.empty:
-            st.warning("No runs found for this experiment.")
-        else:
+        # Call Flask backend API
+        resp = requests.get(f"{API_URL}/mlflow", params={"experiment_name": experiment_name})
+
+        if resp.status_code == 200 and resp.json():
+            runs = resp.json()
+            df = pd.DataFrame(runs)
+
             st.write("### Experiment Runs")
             st.dataframe(df)
 
-            # Show metrics summary
-            metric_cols = [col for col in df.columns if col not in ["run_id"]]
+            # Show metrics overview if numeric columns exist
+            metric_cols = [
+                col for col in df.columns
+                if col not in ["run_id"] and pd.api.types.is_numeric_dtype(df[col])
+            ]
             if metric_cols:
                 st.write("### Metrics Overview")
                 st.bar_chart(df[metric_cols])
-
-if __name__ == "__main__":
-    main()
+        else:
+            st.warning("No runs found for this experiment.")

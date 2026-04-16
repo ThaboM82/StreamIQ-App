@@ -26,7 +26,8 @@ def show_summary(df):
     )
     st.bar_chart(complaints.set_index("issue"))
 
-def main():
+def run():
+    """Entry point for Streamlit sidebar navigation."""
     st.title("📊 Big Data Demo")
     dataset_choice = st.selectbox(
         "Choose a dataset",
@@ -35,6 +36,3 @@ def main():
     if st.button("Load Dataset"):
         df = load_dataset(dataset_choice)
         show_summary(df)
-
-if __name__ == "__main__":
-    main()

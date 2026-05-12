@@ -4,6 +4,17 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 import joblib
 from pathlib import Path
+from datetime import datetime
+
+def build_summary(df, mode="live"):
+    """Create a stakeholder‑ready summary row with row count, timestamp, and mode indicator."""
+    summary = {
+        "summary_row": True,
+        "row_count": len(df),
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "mode": mode
+    }
+    return pd.DataFrame([summary])
 
 def main():
     # Resolve paths relative to project root
@@ -39,7 +50,16 @@ def main():
 
     # Save model
     joblib.dump(pipeline, model_path)
-    print(f"Model trained and saved to {model_path}")
+    print(f"✅ Model trained and saved to {model_path}")
+
+    # Build and append summary row
+    summary_df = build_summary(df, mode="live")
+    final_df = pd.concat([df, summary_df], ignore_index=True)
+
+    # Save training dataset with summary row
+    output_file = base_dir / "data" / "training_with_summary.csv"
+    final_df.to_csv(output_file, index=False)
+    print(f"📊 Training dataset with summary row saved to {output_file}")
 
 if __name__ == "__main__":
     main()

@@ -4,6 +4,18 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from datetime import datetime
+
+def build_summary(y_true, y_pred, mode="live"):
+    """Create a stakeholder‑ready summary row with counts, accuracy, timestamp, and mode indicator."""
+    summary = {
+        "summary_row": True,
+        "rows_evaluated": len(y_true),
+        "accuracy": accuracy_score(y_true, y_pred),
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "mode": mode
+    }
+    return pd.DataFrame([summary])
 
 def main():
     if len(sys.argv) != 3:
@@ -53,8 +65,15 @@ def main():
     plt.tight_layout()
     plt.savefig("C:/StreamIQ App/data/confusion_matrix.png")
 
+    # Build and append summary row
+    summary_df = build_summary(y, y_pred, mode="live")
+    final_df = pd.concat([df, summary_df], ignore_index=True)
+    output_file = test_file.replace(".csv", "_evaluated.csv")
+    final_df.to_csv(output_file, index=False)
+
     print(f"Evaluation complete. Metrics saved to {metrics_path}")
     print("Confusion matrix heatmap saved to C:/StreamIQ App/data/confusion_matrix.png")
+    print(f"Evaluated dataset with summary row saved to {output_file}")
 
 if __name__ == "__main__":
     main()

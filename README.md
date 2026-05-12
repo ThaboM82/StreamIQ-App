@@ -1,6 +1,7 @@
 # StreamIQ – Real-Time Customer Intelligence 🚀
 
-[![CI/CD Deploy to ECS](https://github.com/ThaboM82/StreamIQ/actions/workflows/deploy.yml/badge.svg)](https://github.com/ThaboM82/StreamIQ/actions/workflows/deploy.yml)
+
+![CI Pipeline](https://github.com/ThaboM82/StreamIQ/actions/workflows/ci.yml/badge.svg)
 [![Build Status](https://github.com/ThaboM82/StreamIQ/actions/workflows/tests.yml/badge.svg)](https://github.com/ThaboM82/StreamIQ/actions/workflows/tests.yml)
 ![Python Tests](https://github.com/ThaboM82/StreamIQ/actions/workflows/github_actions.yml/badge.svg)
 [![codecov](https://codecov.io/gh/ThaboM82/StreamIQ/branch/main/graph/badge.svg)](https://codecov.io/gh/ThaboM82/StreamIQ)

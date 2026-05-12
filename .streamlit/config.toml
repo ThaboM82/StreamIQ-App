@@ -14,10 +14,22 @@ headless = false
 # Watch for file changes and auto-reload
 fileWatcherType = "auto"
 
+# --- Dark Theme (default demo mode) ---
 [theme]
-# Polished dashboard theme
-primaryColor = "#4CAF50"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F0F2F6"
-textColor = "#000000"
+base = "dark"
+primaryColor = "#4CAF50"             # StreamIQ green accent
+backgroundColor = "#1E2228"          # lighter dark banner
+secondaryBackgroundColor = "#262730" # dark panels
+textColor = "#FAFAFA"                # light text for readability
 font = "sans serif"
+
+# --- Light Theme (stakeholder variant) ---
+# To enable, change base = "light" above
+# and adjust branding.py to sync logos/favicons
+#[theme]
+#base = "light"
+#primaryColor = "#4CAF50"             # StreamIQ green accent
+#backgroundColor = "#FFFFFF"          # clean white background
+#secondaryBackgroundColor = "#F5F5F5" # subtle light gray panels
+#textColor = "#212121"                # dark text for readability
+#font = "sans serif"

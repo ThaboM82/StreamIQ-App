@@ -1,7 +1,23 @@
 import sqlite3
 import os
 import streamlit as st
-from src.utils.logger import init_db  # reuse the same init logic
+import warnings
+import pandas as pd
+import src.utils.loaders as loaders
+from src.db.init_db import init_db          # ✅ import from db, not logger
+from src.utils.logger import clear_logs, reset_preferences
+from src.utils.branding import (
+    export_csv_with_branding,
+    export_excel_with_branding,
+    export_pdf_with_logo
+)
+
+# Suppress RuntimeWarning about re-importing helpers
+warnings.filterwarnings(
+    "ignore",
+    message=".*src.utils.helpers.*",
+    category=RuntimeWarning
+)
 
 # Resolve the repo root (two levels up from utils)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,19 +35,40 @@ def _get_connection():
         init_db()
     return conn
 
-def log_history(entry: str):
-    """Insert a dashboard action into the unified logs table."""
+# -------------------------------
+# Logging Helpers
+# -------------------------------
+def log_event(event: str, log_type: str = "DASHBOARD"):
+    """Insert an event into the unified logs table."""
     conn = _get_connection()
     c = conn.cursor()
     c.execute(
         "INSERT INTO logs (timestamp, event, log_type) VALUES (datetime('now'), ?, ?)",
-        (entry, "DASHBOARD"),
+        (event, log_type),
     )
     conn.commit()
     conn.close()
 
+def log_history(entry: str):
+    """Legacy alias for dashboard logging."""
+    log_event(entry, log_type="DASHBOARD")
+
+# -------------------------------
+# History Retrieval
+# -------------------------------
 def show_history(limit: int = 50):
-    """Display recent logs (backend + dashboard) in Streamlit."""
+    """
+    Fetch recent logs (backend + dashboard).
+    Returns list of dicts for reuse in Streamlit or backend.
+    """
+    # Dummy mode fallback
+    if loaders.USE_DUMMY:
+        return [
+            {"event": "Dummy log entry", "timestamp": "2026-04-29 10:00:00", "log_type": "DUMMY"},
+            {"event": "Viewed Call Center Demo", "timestamp": "2026-04-29 10:05:00", "log_type": "INFO"},
+            {"event": "Ran Feedback Analysis", "timestamp": "2026-04-29 10:10:00", "log_type": "INFO"},
+        ]
+
     conn = _get_connection()
     c = conn.cursor()
     c.execute(
@@ -41,9 +78,53 @@ def show_history(limit: int = 50):
     rows = c.fetchall()
     conn.close()
 
-    if rows:
-        st.dataframe(
-            [{"event": row[0], "timestamp": row[1], "log_type": row[2]} for row in rows]
-        )
-    else:
-        st.info("No history available yet.")
+    return [{"event": row[0], "timestamp": row[1], "log_type": row[2]} for row in rows]
+
+# -------------------------------
+# Reset Helpers
+# -------------------------------
+def reset_history_and_preferences():
+    """Clear all logs and reset preferences in one call."""
+    clear_logs()
+    reset_preferences()
+
+# -------------------------------
+# Export Helpers
+# -------------------------------
+def export_history(base_filename: str = "history", limit: int = 50):
+    """
+    Export history logs with branding in CSV, Excel, and PDF formats.
+    Returns dictionary of filenames.
+    """
+    logs = show_history(limit=limit)
+    df = pd.DataFrame(logs)
+
+    summary = {
+        "Total Logs": len(df),
+        "Log Types": df["log_type"].nunique() if not df.empty else 0,
+        "Last Event": df["event"].iloc[0] if not df.empty else "None"
+    }
+
+    pdf_file = f"{base_filename}.pdf"
+    xlsx_file = f"{base_filename}.xlsx"
+    csv_file = f"{base_filename}.csv"
+
+    export_pdf_with_logo(pdf_file, title="StreamIQ Log History", df=df, summary=summary)
+    export_excel_with_branding(df, xlsx_file, summary=summary, dataset_sheet="Logs")
+    export_csv_with_branding(df, csv_file, summary=summary)
+
+    return {"pdf": pdf_file, "excel": xlsx_file, "csv": csv_file}
+
+# -------------------------------
+# CLI Entry Point
+# -------------------------------
+if __name__ == "__main__":
+    print("Resetting history and preferences...")
+    reset_history_and_preferences()
+    print("Done.")
+
+# -------------------------------
+# Module Load Confirmation
+# -------------------------------
+from src.utils.branding import cli_confirm
+cli_confirm("Logger module loaded")

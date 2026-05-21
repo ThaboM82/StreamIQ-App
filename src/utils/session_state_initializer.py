@@ -1,4 +1,8 @@
 import streamlit as st
+import warnings
+
+# Suppress RuntimeWarnings globally (e.g. duplicate module imports)
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 def init_session_state():
     """Initialize Streamlit session state keys."""

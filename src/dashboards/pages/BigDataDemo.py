@@ -1,5 +1,5 @@
 import streamlit as st
-from streamiq.spark_utils import get_spark
+from src.streamiq.spark_utils import get_spark
 
 def load_dataset(filename: str):
     spark = get_spark("StreamIQDashboard")

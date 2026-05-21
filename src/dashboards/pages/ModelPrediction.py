@@ -1,6 +1,6 @@
 import streamlit as st
-from streamiq.model_utils import predict_intent
-from streamiq.mlflow_utils import log_experiment
+from src.streamiq.model_utils import predict_intent
+from src.streamiq.mlflow_utils import log_experiment
 
 def run():
     """Entry point for Streamlit sidebar navigation."""

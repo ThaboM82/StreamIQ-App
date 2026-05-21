@@ -2,6 +2,7 @@ import sys
 import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
+import seaborn as sns
 from pathlib import Path
 from datetime import datetime
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
@@ -12,18 +13,10 @@ from src.utils.branding import (
     export_excel_with_branding,
     export_pdf_with_logo
 )
-from src.utils.plot_utils import save_professional_plot   
+from src.utils.plot_utils import save_professional_plot
 
 EXPORT_DIR = Path("src/exports")
 EXPORT_DIR.mkdir(parents=True, exist_ok=True)
-
-def save_professional_plot(fig, filename: Path, dpi: int = 120):
-    """Save a matplotlib figure with StreamIQ's professional sizing standards."""
-    sns.set(font_scale=0.9)
-    fig.set_size_inches(5, 4)
-    fig.tight_layout()
-    fig.savefig(filename, dpi=dpi)
-    print(f"📊 Professional plot saved to {filename}")
 
 def main():
     if loaders.USE_DUMMY:

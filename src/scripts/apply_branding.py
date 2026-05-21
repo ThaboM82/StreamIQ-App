@@ -1,51 +1,62 @@
-# src/scripts/apply_branding.py
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import seaborn as sns
 from fpdf import FPDF
 from datetime import datetime
 import src.utils.loaders as loaders
-from src.utils.branding import get_theme_assets
-from src.utils.plot_utils import save_professional_plot   
+from src.utils.branding import get_theme_assets, cli_confirm
+import streamlit as st
 
+# -------------------------------
 # Directories
+# -------------------------------
 ASSETS_DIR = Path("src/assets")
 EXPORT_DIR = Path("src/exports")
-EXPORT_DIR.mkdir(parents=True, exist_ok=True)   # ✅ auto-create if missing
+EXPORT_DIR.mkdir(parents=True, exist_ok=True)
 
-# --- Professional Plot Helper ---
+# -------------------------------
+# Professional Plot Helper
+# -------------------------------
 def save_professional_plot(fig, filename: Path, dpi: int = 120):
-    """Save a matplotlib figure with StreamIQ's professional sizing standards."""
     sns.set(font_scale=0.9)
     fig.set_size_inches(5, 4)
     fig.tight_layout()
     fig.savefig(filename, dpi=dpi)
     print(f"📊 Professional plot saved to {filename}")
 
-# --- Theme-aware Chart Watermark ---
+# -------------------------------
+# Theme-aware Chart Watermark
+# -------------------------------
 def apply_streamiq_watermark(fig, theme="light", alpha=0.15, position=(0.8, 0.05)):
-    """Overlay StreamIQ watermark on a Matplotlib figure."""
     assets = get_theme_assets()
-    watermark_path = assets["watermark"] if assets else ASSETS_DIR / "streamiq_logo_gray.png"
+    watermark_path = assets["watermark"] if assets else ASSETS_DIR / "streamiq_watermark.png"
     try:
         watermark = mpimg.imread(watermark_path)
         ax = fig.add_axes([position[0], position[1], 0.15, 0.15], anchor='SE', zorder=10)
         ax.imshow(watermark, alpha=alpha)
         ax.axis("off")
     except Exception:
-        pass  # fail gracefully if logo missing
+        pass
 
-# --- Chart Export ---
-def watermark_chart(fig=None, theme="light", filename="chart_streamiq.png"):
+# -------------------------------
+# Chart Export
+# -------------------------------
+def watermark_chart(fig=None, theme="light", filename="chart_streamiq.png", summary=None):
     if fig is None:
         fig, ax = plt.subplots()
         ax.plot([1, 2, 3, 4], [10, 20, 25, 30])
     apply_streamiq_watermark(fig, theme=theme)
     save_professional_plot(fig, EXPORT_DIR / filename)
+
+    entry = f"Chart export complete: Mode={theme.capitalize()}, Timestamp={datetime.now().strftime('%Y-%m-%d %H:%M:%S')}, File={filename}"
+    _log_export(entry)
     return EXPORT_DIR / filename
 
-# --- CSV Export ---
+# -------------------------------
+# CSV Export
+# -------------------------------
 def watermark_csv(data=None, theme="light", filename="streamiq_export.csv", summary=None):
     if loaders.USE_DUMMY or data is None:
         data = {"Conversation": [1, 2, 3], "Insight": ["Demo A", "Demo B", "Demo C"]}
@@ -56,9 +67,14 @@ def watermark_csv(data=None, theme="light", filename="streamiq_export.csv", summ
         for k, v in summary.items():
             df.loc[len(df)] = [k, v]
     df.to_csv(EXPORT_DIR / filename, index=False)
+
+    entry = f"CSV export complete: {len(df)} rows, Mode={theme.capitalize()}, Timestamp={datetime.now().strftime('%Y-%m-%d %H:%M:%S')}, File={filename}"
+    _log_export(entry)
     return EXPORT_DIR / filename
 
-# --- Excel Export ---
+# -------------------------------
+# Excel Export
+# -------------------------------
 def watermark_excel(data=None, theme="light", filename="streamiq_export.xlsx", summary=None):
     if loaders.USE_DUMMY or data is None:
         data = {"Conversation": [1, 2, 3], "Insight": ["Demo A", "Demo B", "Demo C"]}
@@ -68,41 +84,97 @@ def watermark_excel(data=None, theme="light", filename="streamiq_export.xlsx", s
     if summary:
         for k, v in summary.items():
             df.loc[len(df)] = [k, v]
-    df.to_excel(EXPORT_DIR / filename, index=False, engine="openpyxl")
+
+    with pd.ExcelWriter(EXPORT_DIR / filename, engine="xlsxwriter") as writer:
+        df.to_excel(writer, sheet_name="Data", index=False)
+        worksheet = writer.sheets["Data"]
+
+        # ✅ Insert tagline logo always
+        if (ASSETS_DIR / "streamiq_logo_tagline.png").exists():
+            worksheet.insert_image("A1", str(ASSETS_DIR / "streamiq_logo_tagline.png"), {'x_scale': 0.4, 'y_scale': 0.4})
+
+        # 🔄 Mode-aware banner
+        if loaders.USE_DUMMY and (ASSETS_DIR / "streamiq_banner_demo.png").exists():
+            worksheet.insert_image("C1", str(ASSETS_DIR / "streamiq_banner_demo.png"), {'x_scale': 0.5, 'y_scale': 0.5})
+        elif (ASSETS_DIR / "streamiq_banner_backend.png").exists():
+            worksheet.insert_image("C1", str(ASSETS_DIR / "streamiq_banner_backend.png"), {'x_scale': 0.5, 'y_scale': 0.5})
+
+        # Add summary sheet
+        if summary:
+            summary_df = pd.DataFrame([summary])
+            summary_df.to_excel(writer, sheet_name="Summary", index=False)
+            summary_ws = writer.sheets["Summary"]
+            if (ASSETS_DIR / "streamiq_logo_tagline.png").exists():
+                summary_ws.insert_image("A1", str(ASSETS_DIR / "streamiq_logo_tagline.png"), {'x_scale': 0.5, 'y_scale': 0.5})
+
+    entry = f"Excel export complete: {len(df)} rows, Mode={theme.capitalize()}, Timestamp={datetime.now().strftime('%Y-%m-%d %H:%M:%S')}, File={filename}"
+    _log_export(entry)
     return EXPORT_DIR / filename
 
-# --- PDF Export ---
+# -------------------------------
+# PDF Export
+# -------------------------------
 def watermark_pdf(text="StreamIQ Insights Report", theme="light", filename="streamiq_report.pdf", summary=None):
-    assets = get_theme_assets()
-    watermark_path = assets["watermark"] if assets else ASSETS_DIR / "streamiq_logo_gray.png"
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
+
+    # ✅ Insert tagline logo always
+    if (ASSETS_DIR / "streamiq_logo_tagline.png").exists():
+        pdf.image(str(ASSETS_DIR / "streamiq_logo_tagline.png"), 10, 8, 40)
+
+    # 🔄 Mode-aware banner
+    if loaders.USE_DUMMY and (ASSETS_DIR / "streamiq_banner_demo.png").exists():
+        pdf.image(str(ASSETS_DIR / "streamiq_banner_demo.png"), 60, 8, 60)
+    elif (ASSETS_DIR / "streamiq_banner_backend.png").exists():
+        pdf.image(str(ASSETS_DIR / "streamiq_banner_backend.png"), 60, 8, 60)
+
     pdf.multi_cell(0, 10, text)
     if summary:
         for k, v in summary.items():
             pdf.cell(0, 10, f"{k}: {v}", ln=True)
+
+    assets = get_theme_assets()
+    watermark_path = assets["watermark"] if assets else ASSETS_DIR / "streamiq_watermark.png"
     try:
         pdf.image(str(watermark_path), x=150, y=250, w=40, h=20)
     except Exception:
         pass
+
     pdf.output(str(EXPORT_DIR / filename))
+
+    entry = f"PDF export complete: Mode={theme.capitalize()}, Timestamp={datetime.now().strftime('%Y-%m-%d %H:%M:%S')}, File={filename}"
+    _log_export(entry)
     return EXPORT_DIR / filename
 
-# --- Unified Export Manager ---
+# -------------------------------
+# Unified Export Manager
+# -------------------------------
 def export_with_branding(data=None, fig=None, export_type="csv", theme="light", summary=None):
     if export_type == "csv":
         return watermark_csv(data, theme=theme, summary=summary)
     elif export_type == "xlsx":
         return watermark_excel(data, theme=theme, summary=summary)
     elif export_type == "png":
-        return watermark_chart(fig, theme=theme)
+        return watermark_chart(fig, theme=theme, summary=summary)
     elif export_type == "pdf":
         return watermark_pdf(theme=theme, summary=summary)
     else:
         raise ValueError("Unsupported export_type. Use 'csv', 'xlsx', 'png', or 'pdf'.")
 
-# --- CLI Entry Point ---
+# -------------------------------
+# Audit Trail Helper
+# -------------------------------
+def _log_export(entry: str):
+    if "audit_log" not in st.session_state:
+        st.session_state["audit_log"] = []
+    st.session_state["audit_log"].append(entry)
+    st.session_state["audit_log"] = st.session_state["audit_log"][-10:]
+    print(entry)
+
+# -------------------------------
+# CLI Entry Point
+# -------------------------------
 if __name__ == "__main__":
     print("Applying StreamIQ branding...")
     summary = {
@@ -115,3 +187,8 @@ if __name__ == "__main__":
     print("Chart saved to:", watermark_chart(theme="light"))
     print("PDF saved to:", watermark_pdf(theme="light", summary=summary))
     print("📊 Branded exports saved to src/exports/")
+
+    # -------------------------------
+    # Module Load Confirmation
+    # -------------------------------
+    cli_confirm("Apply Branding module loaded")

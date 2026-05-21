@@ -1,2 +1,14 @@
-/call_center.csv
-/claims.csv
+# Ignore local virtual environment
+.venv/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore MLflow experiment logs
+mlruns/
+
+# Ignore generated assets
+*.pdf
+*.png
+*.csv
